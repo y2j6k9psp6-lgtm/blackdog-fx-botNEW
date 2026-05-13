@@ -30,6 +30,6 @@ jobs:
         run: |
           git config user.name "Black Dog Bot"
           git config user.email "blackdog-bot@users.noreply.github.com"
-          git add docs/status.json
+                    git add -f docs/
           git diff --staged --quiet || git commit -m "chore: update signal status [skip ci]"
           git push
