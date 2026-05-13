@@ -12,28 +12,23 @@ jobs:
   run-bot:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-
       - name: Run Black Dog Bot
         env:
-          TELEGRAM_TOKEN:   ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python blackdog_bot.py
-
-      - name: Push dashboard status to GitHub Pages
+      - name: Push dashboard status
         run: |
-          git config user.name  "Black Dog Bot"
+          git config user.name "Black Dog Bot"
           git config user.email "blackdog-bot@users.noreply.github.com"
           git add docs/status.json
           git diff --staged --quiet || git commit -m "chore: update signal status [skip ci]"
