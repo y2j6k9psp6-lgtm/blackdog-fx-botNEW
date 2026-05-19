@@ -1,0 +1,329 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// BlackDog Pro — SuperTrend Confluence System (Pine Script v5)
+//
+// Built from scratch using the most consistently backtested components:
+//   • SuperTrend (ATR 10 × 3.0)   — primary trend engine
+//   • EMA 200                      — institutional trend filter
+//   • EMA 21 / 50 cross            — local momentum gate
+//   • RSI 14                       — momentum quality filter (avoids extremes)
+//   • 4H SuperTrend via MTF        — higher-timeframe confirmation
+//   • Chandelier Exit (ATR 22 × 3) — dynamic trailing stop / exit signal
+//   • ATR-based SL/TP levels       — built-in risk management
+//
+// RECOMMENDED USAGE
+//   • Primary timeframe : 1H (swing entries with 4H trend filter)
+//   • Also works well   : 4H (position trades, broader stops)
+//   • Best pairs        : Major Forex pairs (EURUSD, GBPUSD, USDJPY, AUDUSD)
+//
+// SIGNAL CONDITIONS — LONG (all 5 must align)
+//   1. SuperTrend is bullish  (price above ST line)
+//   2. Price above EMA 200    (institutional uptrend)
+//   3. EMA 21 > EMA 50        (local momentum bullish)
+//   4. RSI between 50 and 75  (rising momentum, not yet overbought)
+//   5. 4H SuperTrend bullish  (higher-timeframe confirmation)
+//
+// SIGNAL CONDITIONS — SHORT (mirror of above)
+//   1. SuperTrend is bearish
+//   2. Price below EMA 200
+//   3. EMA 21 < EMA 50
+//   4. RSI between 25 and 50
+//   5. 4H SuperTrend bearish
+//
+// EXIT SIGNALS
+//   • Chandelier Exit flips direction (primary exit)
+//   • SuperTrend flips (secondary/earlier exit)
+//
+// RISK MANAGEMENT (shown as dotted lines on chart)
+//   • Stop Loss  : 1.5 × ATR below entry (long) / above entry (short)
+//   • Take Profit: 2.5 × ATR from entry (1 : 1.67 R:R minimum)
+
+//@version=5
+indicator("🐕 BlackDog Pro — SuperTrend Confluence", overlay=true, max_bars_back=500)
+
+// ─── Inputs ───────────────────────────────────────────────────────────────────
+
+g_st   = "SuperTrend"
+g_ema  = "EMA Filters"
+g_rsi  = "RSI Filter"
+g_ce   = "Chandelier Exit"
+g_rr   = "Risk Management"
+g_mtf  = "Multi-Timeframe"
+g_disp = "Display"
+
+// SuperTrend
+st_atr_len  = input.int(10,  "ATR Length",   minval=1,   group=g_st)
+st_factor   = input.float(3.0,"Multiplier",  minval=0.1, step=0.1, group=g_st)
+
+// EMA filters
+ema_fast    = input.int(21,  "Fast EMA",     minval=1,   group=g_ema)
+ema_slow    = input.int(50,  "Slow EMA",     minval=1,   group=g_ema)
+ema_major   = input.int(200, "Major EMA",    minval=1,   group=g_ema)
+
+// RSI
+rsi_len     = input.int(14,  "RSI Length",   minval=1,   group=g_rsi)
+rsi_bull_lo = input.int(50,  "Bull RSI Min", minval=1,   maxval=100, group=g_rsi)
+rsi_bull_hi = input.int(75,  "Bull RSI Max", minval=1,   maxval=100, group=g_rsi)
+rsi_bear_lo = input.int(25,  "Bear RSI Min", minval=1,   maxval=100, group=g_rsi)
+rsi_bear_hi = input.int(50,  "Bear RSI Max", minval=1,   maxval=100, group=g_rsi)
+
+// Chandelier Exit
+ce_atr_len  = input.int(22,  "CE ATR Length",   minval=1,   group=g_ce)
+ce_mult     = input.float(3.0,"CE Multiplier",  minval=0.1, step=0.1, group=g_ce)
+
+// Risk management
+sl_mult     = input.float(1.5,"SL ATR Mult",   minval=0.1, step=0.1, group=g_rr)
+tp_mult     = input.float(2.5,"TP ATR Mult",   minval=0.1, step=0.1, group=g_rr)
+show_levels = input.bool(true, "Show SL/TP Levels", group=g_rr)
+
+// MTF
+htf         = input.timeframe("240", "Higher Timeframe (4H default)", group=g_mtf)
+use_mtf     = input.bool(true, "Require HTF Confirmation", group=g_mtf)
+
+// Display
+show_bg     = input.bool(true,  "Show Background",   group=g_disp)
+show_ce     = input.bool(true,  "Show Chandelier Exit Line", group=g_disp)
+show_dash   = input.bool(true,  "Show Dashboard",    group=g_disp)
+
+// ─── Core Indicators ──────────────────────────────────────────────────────────
+
+// EMAs
+e_fast  = ta.ema(close, ema_fast)
+e_slow  = ta.ema(close, ema_slow)
+e_major = ta.ema(close, ema_major)
+
+// RSI
+rsi_val = ta.rsi(close, rsi_len)
+
+// ATR (used for ST and risk levels)
+atr_val = ta.atr(st_atr_len)
+
+// ─── SuperTrend ───────────────────────────────────────────────────────────────
+
+[st_line, st_dir] = ta.supertrend(st_factor, st_atr_len)
+// st_dir: -1 = bullish (price above ST), +1 = bearish (price below ST)
+st_bull = st_dir == -1
+st_bear = st_dir ==  1
+
+// ─── Chandelier Exit ──────────────────────────────────────────────────────────
+
+ce_atr      = ta.atr(ce_atr_len)
+long_stop   = ta.highest(high, ce_atr_len) - ce_mult * ce_atr
+short_stop  = ta.lowest(low,  ce_atr_len) + ce_mult * ce_atr
+
+// Ratchet: stops only move in the profitable direction
+long_stop_r  = float(na)
+short_stop_r = float(na)
+long_stop_r  := close[1] > nz(long_stop_r[1],  long_stop)  ? math.max(long_stop,  nz(long_stop_r[1]))  : long_stop
+short_stop_r := close[1] < nz(short_stop_r[1], short_stop) ? math.min(short_stop, nz(short_stop_r[1])) : short_stop
+
+// CE direction
+ce_dir   = int(na)
+ce_dir  := nz(ce_dir[1], 1)
+ce_dir  := ce_dir == -1 and close < long_stop_r  ?  1 :
+           ce_dir ==  1 and close > short_stop_r ? -1 : ce_dir
+
+ce_bull = ce_dir == -1
+ce_bear = ce_dir ==  1
+ce_flip_long  = ce_bull and not ce_bull[1]
+ce_flip_short = ce_bear and not ce_bear[1]
+
+// Active CE stop level
+ce_stop = ce_bull ? long_stop_r : short_stop_r
+
+// ─── Multi-Timeframe SuperTrend ───────────────────────────────────────────────
+
+[htf_st, htf_dir] = request.security(
+     syminfo.tickerid, htf,
+     ta.supertrend(st_factor, st_atr_len),
+     lookahead=barmerge.lookahead_off)
+
+htf_bull = htf_dir == -1
+htf_bear = htf_dir ==  1
+
+// ─── Signal Conditions ────────────────────────────────────────────────────────
+
+c_st_long   = st_bull
+c_st_short  = st_bear
+c_ema_long  = close > e_major and e_fast > e_slow
+c_ema_short = close < e_major and e_fast < e_slow
+c_rsi_long  = rsi_val >= rsi_bull_lo and rsi_val <= rsi_bull_hi
+c_rsi_short = rsi_val >= rsi_bear_lo and rsi_val <= rsi_bear_hi
+c_htf_long  = not use_mtf or htf_bull
+c_htf_short = not use_mtf or htf_bear
+c_ce_long   = ce_bull
+c_ce_short  = ce_bear
+
+// Full entry: all 5 conditions
+long_entry  = c_st_long  and c_ema_long  and c_rsi_long  and c_htf_long  and c_ce_long
+short_entry = c_st_short and c_ema_short and c_rsi_short and c_htf_short and c_ce_short
+
+// Only fire on the first bar where all conditions align
+long_signal  = long_entry  and not long_entry[1]
+short_signal = short_entry and not short_entry[1]
+
+// Exit: CE flips or ST flips against the position
+exit_long  = ce_flip_short or (st_bear and not st_bear[1])
+exit_short = ce_flip_long  or (st_bull and not st_bull[1])
+
+// ─── ATR Risk Levels (last signal only) ──────────────────────────────────────
+
+var float entry_price  = na
+var float sl_level     = na
+var float tp_level     = na
+var bool  in_long      = false
+var bool  in_short     = false
+
+if long_signal
+    entry_price := close
+    sl_level    := close - sl_mult * atr_val
+    tp_level    := close + tp_mult * atr_val
+    in_long     := true
+    in_short    := false
+
+if short_signal
+    entry_price := close
+    sl_level    := close + sl_mult * atr_val
+    tp_level    := close - tp_mult * atr_val
+    in_long     := false
+    in_short    := true
+
+if (in_long and exit_long) or (in_short and exit_short)
+    in_long  := false
+    in_short := false
+    sl_level := na
+    tp_level := na
+
+// ─── Background ───────────────────────────────────────────────────────────────
+
+bg_bull = show_bg and st_bull and close > e_major
+bg_bear = show_bg and st_bear and close < e_major
+bgcolor(bg_bull ? color.new(color.teal,  90) : bg_bear ? color.new(color.red, 90) : na,
+     title="Trend Background")
+
+// ─── EMA Plots ────────────────────────────────────────────────────────────────
+
+plot(e_fast,  "EMA 21",  color=color.new(color.yellow, 20), linewidth=1)
+plot(e_slow,  "EMA 50",  color=color.new(color.orange, 20), linewidth=1)
+plot(e_major, "EMA 200", color=color.new(color.white,  30), linewidth=2)
+
+// ─── SuperTrend Plot ──────────────────────────────────────────────────────────
+
+st_color = st_bull ? color.new(color.lime, 0) : color.new(color.red, 0)
+plot(st_line, "SuperTrend", color=st_color, linewidth=2, style=plot.style_linebr)
+
+// ─── Chandelier Exit Plot ─────────────────────────────────────────────────────
+
+plot(show_ce ? ce_stop : na, "Chandelier Exit",
+     color=ce_bull ? color.new(#00e5ff, 30) : color.new(#ff8c00, 30),
+     linewidth=1, style=plot.style_linebr)
+
+// ─── SL / TP Levels ───────────────────────────────────────────────────────────
+
+plot(show_levels and (in_long or in_short) ? sl_level : na,
+     "Stop Loss", color=color.new(color.red,   20), linewidth=1, style=plot.style_circles)
+plot(show_levels and (in_long or in_short) ? tp_level : na,
+     "Take Profit", color=color.new(color.lime, 20), linewidth=1, style=plot.style_circles)
+
+// ─── Entry Arrows ─────────────────────────────────────────────────────────────
+
+plotshape(long_signal,
+     "LONG Entry", shape.triangleup, location.belowbar,
+     color.new(color.lime, 0), size=size.normal,
+     text="LONG", textcolor=color.lime)
+
+plotshape(short_signal,
+     "SHORT Entry", shape.triangledown, location.abovebar,
+     color.new(color.red, 0), size=size.normal,
+     text="SHORT", textcolor=color.red)
+
+// ─── Exit Markers ────────────────────────────────────────────────────────────
+
+plotshape(exit_long  and in_long[1],
+     "Exit Long",  shape.xcross, location.abovebar,
+     color.new(color.orange, 0), size=size.small)
+
+plotshape(exit_short and in_short[1],
+     "Exit Short", shape.xcross, location.belowbar,
+     color.new(color.orange, 0), size=size.small)
+
+// ─── HTF SuperTrend Step Line ─────────────────────────────────────────────────
+
+plot(htf_st, "HTF SuperTrend",
+     color=htf_bull ? color.new(color.lime, 60) : color.new(color.red, 60),
+     linewidth=3, style=plot.style_stepline)
+
+// ─── Alerts ───────────────────────────────────────────────────────────────────
+
+alertcondition(long_signal,
+     "BD Pro LONG Entry",
+     "🟢 BlackDog Pro LONG on {{ticker}} ({{interval}}) @ {{close}} — all 5 conditions met.")
+alertcondition(short_signal,
+     "BD Pro SHORT Entry",
+     "🔴 BlackDog Pro SHORT on {{ticker}} ({{interval}}) @ {{close}} — all 5 conditions met.")
+alertcondition(exit_long,
+     "BD Pro Exit Long",
+     "⚠️ BlackDog Pro EXIT LONG on {{ticker}} — Chandelier/SuperTrend flipped.")
+alertcondition(exit_short,
+     "BD Pro Exit Short",
+     "⚠️ BlackDog Pro EXIT SHORT on {{ticker}} — Chandelier/SuperTrend flipped.")
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+if show_dash and barstate.islast
+    var table t = table.new(
+         position.top_right, 2, 10,
+         bgcolor      = color.new(color.black, 15),
+         border_width = 1, border_color = color.new(color.gray, 60),
+         frame_width  = 1, frame_color  = color.new(color.gray, 40))
+
+    // Signal header
+    sig_text  = long_entry  ? "LONG  ▲" : short_entry ? "SHORT ▼" : "NO SIGNAL"
+    sig_color = long_entry  ? color.lime : short_entry ? color.red : color.gray
+    hdr_bg    = color.new(color.navy, 0)
+
+    table.cell(t, 0, 0, "🐕 BLACKDOG PRO",
+         text_color=color.white, text_size=size.small, bgcolor=hdr_bg)
+    table.cell(t, 1, 0, sig_text,
+         text_color=sig_color,   text_size=size.small, bgcolor=hdr_bg)
+
+    // Direction row
+    dir_text  = st_bull ? "BULL" : "BEAR"
+    dir_color = st_bull ? color.lime : color.red
+    table.cell(t, 0, 1, "ST Direction", text_color=color.silver, text_size=size.small)
+    table.cell(t, 1, 1, dir_text,       text_color=dir_color,    text_size=size.small)
+
+    // 5 conditions
+    labels = array.from("SuperTrend", "EMA 200 + 21/50", "RSI Filter", "HTF ST (" + htf + ")", "Chande Exit")
+    c_long = array.from(c_st_long, c_ema_long, c_rsi_long, c_htf_long, c_ce_long)
+    c_short= array.from(c_st_short, c_ema_short, c_rsi_short, c_htf_short, c_ce_short)
+    use_long = st_bull
+
+    for i = 0 to 4
+        met = use_long ? array.get(c_long, i) : array.get(c_short, i)
+        table.cell(t, 0, i + 2, array.get(labels, i),
+             text_color=color.silver, text_size=size.tiny)
+        table.cell(t, 1, i + 2, met ? "✓  YES" : "✗  NO",
+             text_color=met ? color.lime : color.red, text_size=size.tiny)
+
+    // RSI value
+    table.cell(t, 0, 7, "RSI (14)",
+         text_color=color.silver, text_size=size.tiny)
+    table.cell(t, 1, 7, str.tostring(math.round(rsi_val, 1)),
+         text_color=rsi_val > 60 ? color.lime : rsi_val < 40 ? color.red : color.yellow,
+         text_size=size.tiny)
+
+    // Conditions met count
+    n_long  = (c_st_long  ? 1:0) + (c_ema_long  ? 1:0) + (c_rsi_long  ? 1:0) + (c_htf_long  ? 1:0) + (c_ce_long  ? 1:0)
+    n_short = (c_st_short ? 1:0) + (c_ema_short ? 1:0) + (c_rsi_short ? 1:0) + (c_htf_short ? 1:0) + (c_ce_short ? 1:0)
+    n       = use_long ? n_long : n_short
+    n_color = n == 5 ? color.lime : n >= 3 ? color.yellow : color.red
+
+    table.cell(t, 0, 8, "Conditions Met", text_color=color.silver, text_size=size.small)
+    table.cell(t, 1, 8, str.tostring(n) + " / 5",
+         text_color=n_color, text_size=size.small)
+
+    // In-trade SL/TP
+    trade_txt = in_long ? "IN LONG" : in_short ? "IN SHORT" : "FLAT"
+    trade_col = in_long ? color.lime : in_short ? color.red : color.gray
+    table.cell(t, 0, 9, "Position",  text_color=color.silver, text_size=size.tiny)
+    table.cell(t, 1, 9, trade_txt,   text_color=trade_col,    text_size=size.tiny)
