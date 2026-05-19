@@ -1,0 +1,207 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// Black Dog FX — Bill Dow's System (Pine Script v5)
+// Faithfully recreated from the Black Dog Forex method:
+//   • 3-layer multi-timeframe confluence (15M + 1H + 4H)
+//   • Channel breakout entry via 50 EMA of Highs/Lows
+//   • MACD (10-20-1) zero-line filter on all three timeframes
+//   • SES (Simple Entry Signal) trigger arrow on channel cross
+//   • All 6 conditions shown in a real-time dashboard table
+//
+// HOW TO USE
+//   1. Add this indicator to a 15-minute Forex chart.
+//   2. Add the companion "Black Dog FX — MACD (MTF)" indicator below.
+//   3. A full BUY/SELL arrow means ALL 6 conditions are met.
+//      • BUY:  place a pending order 2-3 pips above the signal bar's HIGH
+//      • SELL: place a pending order 2-3 pips below the signal bar's LOW
+//      • Stop: opposite channel band (ch_low for BUY, ch_high for SELL)
+//   4. A small blue/red arrow is the SES preliminary signal — not all
+//      conditions are met yet, but watch for the setup to complete.
+//   5. Set alerts on "BD BUY" / "BD SELL" for hands-free notifications.
+
+//@version=5
+indicator("🐕 Black Dog FX — Bill Dow System", overlay=true, max_bars_back=500)
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+
+g_bd   = "Black Dog Settings"
+g_macd = "MACD Settings"
+g_disp = "Display"
+
+bd_fast   = input.int(20,   "BD Fast EMA (Trend)",    minval=1,  group=g_bd)
+bd_slow   = input.int(100,  "BD Slow EMA (Trend)",    minval=1,  group=g_bd)
+ch_len    = input.int(50,   "Channel EMA Length",     minval=1,  group=g_bd)
+macd_fast = input.int(10,   "MACD Fast",              minval=1,  group=g_macd)
+macd_slow = input.int(20,   "MACD Slow",              minval=1,  group=g_macd)
+macd_sig  = input.int(1,    "MACD Signal",            minval=1,  group=g_macd)
+show_bg   = input.bool(true, "Show Background Color", group=g_disp)
+show_fill = input.bool(true, "Show Channel Fill",     group=g_disp)
+show_dash = input.bool(true, "Show Dashboard",        group=g_disp)
+
+// ─── Layer 1: Trend Background (15M EMA Cross) ───────────────────────────────
+
+fast_ema   = ta.ema(close, bd_fast)
+slow_ema   = ta.ema(close, bd_slow)
+bull_trend = fast_ema > slow_ema
+
+// ─── Layer 1: Channel (50 EMA of Highs / Lows) ───────────────────────────────
+
+ch_high = ta.ema(high, ch_len)
+ch_low  = ta.ema(low,  ch_len)
+
+price_above = close > ch_high
+price_below = close < ch_low
+
+// ─── Layer 1: MACD on entry timeframe ────────────────────────────────────────
+
+[macd_line, _, _] = ta.macd(close, macd_fast, macd_slow, macd_sig)
+macd_bull = macd_line > 0
+macd_bear = macd_line < 0
+
+// ─── SES Entry Trigger (channel cross) ───────────────────────────────────────
+
+ses_long  = ta.crossover(close,  ch_high)
+ses_short = ta.crossunder(close, ch_low)
+
+// ─── Layer 2: 1H MACD Confirmation ───────────────────────────────────────────
+
+[m1h_macd, _, _] = request.security(
+     syminfo.tickerid, "60",
+     ta.macd(close, macd_fast, macd_slow, macd_sig),
+     lookahead=barmerge.lookahead_off)
+
+mtf_1h_bull = m1h_macd > 0
+mtf_1h_bear = m1h_macd < 0
+
+// ─── Layer 3: 4H Trend Filter ─────────────────────────────────────────────────
+
+[m4h_macd, _, _] = request.security(
+     syminfo.tickerid, "240",
+     ta.macd(close, macd_fast, macd_slow, macd_sig),
+     lookahead=barmerge.lookahead_off)
+
+mtf_4h_bull = m4h_macd > 0
+mtf_4h_bear = m4h_macd < 0
+
+// ─── Signal Conditions (all 6 must be met) ────────────────────────────────────
+
+long_signal  = bull_trend  and price_above and macd_bull and mtf_1h_bull and mtf_4h_bull and ses_long
+short_signal = not bull_trend and price_below and macd_bear and mtf_1h_bear and mtf_4h_bear and ses_short
+
+// Small SES arrows: trend-aligned channel cross but not yet a full signal
+ses_long_pending  = ses_long  and bull_trend      and not long_signal
+ses_short_pending = ses_short and not bull_trend  and not short_signal
+
+// ─── Background ───────────────────────────────────────────────────────────────
+
+bgcolor(
+     show_bg ? (bull_trend ? color.new(color.green, 92) : color.new(color.red, 92)) : na,
+     title="Trend Background")
+
+// ─── Channel Bands ────────────────────────────────────────────────────────────
+
+ch_color    = bull_trend ? color.lime   : color.maroon
+ch_fill_col = bull_trend ? color.new(color.lime, 88) : color.new(color.maroon, 88)
+
+p_ch_high = plot(ch_high, "Channel High (50 EMA Highs)", color=ch_color, linewidth=2)
+p_ch_low  = plot(ch_low,  "Channel Low  (50 EMA Lows)",  color=ch_color, linewidth=2)
+fill(p_ch_high, p_ch_low, color=show_fill ? ch_fill_col : na, title="Channel Fill")
+
+// ─── Trend EMAs ───────────────────────────────────────────────────────────────
+
+plot(fast_ema, "Fast EMA (20)",  color=color.new(color.yellow, 20), linewidth=1)
+plot(slow_ema, "Slow EMA (100)", color=color.new(color.orange, 20), linewidth=1)
+
+// ─── SES Preliminary Arrows ───────────────────────────────────────────────────
+
+plotshape(ses_long_pending,
+     title="SES Long (Pending)",
+     style=shape.triangleup, location=location.belowbar,
+     color=color.new(#1e90ff, 0), size=size.small)
+
+plotshape(ses_short_pending,
+     title="SES Short (Pending)",
+     style=shape.triangledown, location=location.abovebar,
+     color=color.new(color.red, 0), size=size.small)
+
+// ─── Full BUY / SELL Signals ──────────────────────────────────────────────────
+
+plotshape(long_signal,
+     title="BD BUY Signal",
+     style=shape.triangleup, location=location.belowbar,
+     color=color.new(color.aqua, 0), size=size.large,
+     text="BD BUY", textcolor=color.aqua)
+
+plotshape(short_signal,
+     title="BD SELL Signal",
+     style=shape.triangledown, location=location.abovebar,
+     color=color.new(color.orange, 0), size=size.large,
+     text="BD SELL", textcolor=color.orange)
+
+// ─── Alerts ───────────────────────────────────────────────────────────────────
+
+alertcondition(long_signal,
+     "BD BUY — All 6 Conditions Met",
+     "🐕 Black Dog FX BUY ✅ {{ticker}} ({{interval}}) @ {{close}}\nAll 6 conditions met. Pending BUY 2-3 pips above bar high.")
+
+alertcondition(short_signal,
+     "BD SELL — All 6 Conditions Met",
+     "🐕 Black Dog FX SELL ✅ {{ticker}} ({{interval}}) @ {{close}}\nAll 6 conditions met. Pending SELL 2-3 pips below bar low.")
+
+alertcondition(ses_long_pending,
+     "SES Long Arrow (Pending)",
+     "🐕 BD SES Long arrow on {{ticker}} — watching for full BUY confirmation.")
+
+alertcondition(ses_short_pending,
+     "SES Short Arrow (Pending)",
+     "🐕 BD SES Short arrow on {{ticker}} — watching for full SELL confirmation.")
+
+// ─── Dashboard Table ──────────────────────────────────────────────────────────
+
+if show_dash and barstate.islast
+    var table t = table.new(
+         position.top_right, 2, 9,
+         bgcolor       = color.new(color.black, 15),
+         border_width  = 1, border_color = color.new(color.gray, 60),
+         frame_width   = 1, frame_color  = color.new(color.gray, 40))
+
+    sig_text  = long_signal  ? "BUY 🚀"  : short_signal ? "SELL 💥" : "WAITING"
+    sig_color = long_signal  ? color.aqua : short_signal ? color.orange : color.gray
+    dir_text  = bull_trend   ? "BULL"     : "BEAR"
+    dir_color = bull_trend   ? color.lime : color.red
+
+    // Header row
+    table.cell(t, 0, 0, "🐕 BLACK DOG FX",
+         text_color=color.white,    text_size=size.small,
+         bgcolor   =color.new(color.navy, 0))
+    table.cell(t, 1, 0, sig_text,
+         text_color=sig_color,      text_size=size.small,
+         bgcolor   =color.new(color.navy, 0))
+
+    // Direction row
+    table.cell(t, 0, 1, "Direction",  text_color=color.silver, text_size=size.small)
+    table.cell(t, 1, 1, dir_text,     text_color=dir_color,    text_size=size.small)
+
+    // Six conditions
+    cond_2 = bull_trend ? price_above : price_below
+    cond_3 = bull_trend ? macd_bull   : macd_bear
+    cond_4 = bull_trend ? mtf_1h_bull : mtf_1h_bear
+    cond_5 = bull_trend ? mtf_4h_bull : mtf_4h_bear
+    cond_6 = bull_trend ? ses_long    : ses_short
+
+    labels = array.from("15M Trend BG", "Channel Break", "15M MACD", "1H MACD", "4H MACD", "SES Arrow")
+    conds  = array.from(true, cond_2, cond_3, cond_4, cond_5, cond_6)
+
+    for i = 0 to 5
+        met = array.get(conds, i)
+        table.cell(t, 0, i + 2, array.get(labels, i),
+             text_color=color.silver, text_size=size.tiny)
+        table.cell(t, 1, i + 2, met ? "✓  YES" : "✗  NO",
+             text_color=met ? color.lime : color.red, text_size=size.tiny)
+
+    // Conditions met tally
+    n = (cond_2 ? 1 : 0) + (cond_3 ? 1 : 0) + (cond_4 ? 1 : 0) +
+        (cond_5 ? 1 : 0) + (cond_6 ? 1 : 0) + 1
+    count_color = n == 6 ? color.lime : n >= 4 ? color.yellow : color.red
+    table.cell(t, 0, 8, "Conditions Met", text_color=color.silver, text_size=size.small)
+    table.cell(t, 1, 8, str.tostring(n) + " / 6",
+         text_color=count_color, text_size=size.small)

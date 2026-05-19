@@ -1,0 +1,87 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0
+// Black Dog FX — MACD Pane (Pine Script v5)
+// Companion indicator for "🐕 Black Dog FX — Bill Dow System"
+//
+// Shows three MACD lines in one pane:
+//   • Cyan  histogram + line  = entry timeframe MACD (15M default)
+//   • Yellow line             = 1H MACD (Layer 2 confirmation)
+//   • Orange line             = 4H MACD (Layer 3 trend filter)
+//   • White line              = 7-EMA of the MACD line (signal proxy)
+//
+// HOW TO USE
+//   Add this indicator below the main Black Dog FX overlay indicator.
+//   All three lines above zero = bullish alignment (BUY bias).
+//   All three lines below zero = bearish alignment (SELL bias).
+
+//@version=5
+indicator("🐕 Black Dog FX — MACD (MTF)", overlay=false, max_bars_back=500)
+
+// ─── Inputs ───────────────────────────────────────────────────────────────────
+
+g_macd = "MACD Settings"
+g_mtf  = "Multi-Timeframe"
+
+macd_fast  = input.int(10,    "MACD Fast",    minval=1, group=g_macd)
+macd_slow  = input.int(20,    "MACD Slow",    minval=1, group=g_macd)
+macd_sig   = input.int(1,     "MACD Signal",  minval=1, group=g_macd)
+sig_ema    = input.int(7,     "Signal EMA",   minval=1, group=g_macd)
+tf_1h      = input.timeframe("60",  "1H Timeframe",  group=g_mtf)
+tf_4h      = input.timeframe("240", "4H Timeframe",  group=g_mtf)
+show_1h    = input.bool(true, "Show 1H MACD Line",   group=g_mtf)
+show_4h    = input.bool(true, "Show 4H MACD Line",   group=g_mtf)
+
+// ─── Entry TF MACD ────────────────────────────────────────────────────────────
+
+[macd_line, _, _] = ta.macd(close, macd_fast, macd_slow, macd_sig)
+sig_line          = ta.ema(macd_line, sig_ema)
+hist              = macd_line - sig_line
+
+// Histogram coloring: brighter = momentum accelerating
+hist_bull_strong = color.new(#26a69a, 0)
+hist_bull_weak   = color.new(#26a69a, 50)
+hist_bear_strong = color.new(#ef5350, 0)
+hist_bear_weak   = color.new(#ef5350, 50)
+
+hist_color = hist >= 0
+     ? (hist > hist[1] ? hist_bull_strong : hist_bull_weak)
+     : (hist < hist[1] ? hist_bear_strong : hist_bear_weak)
+
+// ─── MTF MACD ─────────────────────────────────────────────────────────────────
+
+[m1h_macd, _, _] = request.security(
+     syminfo.tickerid, tf_1h,
+     ta.macd(close, macd_fast, macd_slow, macd_sig),
+     lookahead=barmerge.lookahead_off)
+
+[m4h_macd, _, _] = request.security(
+     syminfo.tickerid, tf_4h,
+     ta.macd(close, macd_fast, macd_slow, macd_sig),
+     lookahead=barmerge.lookahead_off)
+
+// ─── Plots ────────────────────────────────────────────────────────────────────
+
+plot(hist,
+     "MACD Histogram", color=hist_color,
+     style=plot.style_histogram, linewidth=2)
+
+plot(macd_line, "MACD Line (Entry TF)",
+     color=color.new(#00e5ff, 0), linewidth=2)
+
+plot(sig_line,  "Signal EMA",
+     color=color.new(color.white, 20), linewidth=1)
+
+plot(show_1h ? m1h_macd : na, "1H MACD",
+     color=color.new(color.yellow, 0), linewidth=1, style=plot.style_line)
+
+plot(show_4h ? m4h_macd : na, "4H MACD",
+     color=color.new(color.orange, 0), linewidth=2, style=plot.style_line)
+
+hline(0, "Zero Line", color=color.new(color.gray, 40), linewidth=1)
+
+// ─── Background tint: shows when all TF MACDs agree ──────────────────────────
+
+all_bull = macd_line > 0 and (not show_1h or m1h_macd > 0) and (not show_4h or m4h_macd > 0)
+all_bear = macd_line < 0 and (not show_1h or m1h_macd < 0) and (not show_4h or m4h_macd < 0)
+
+bgcolor(all_bull ? color.new(color.green, 92) : all_bear ? color.new(color.red, 92) : na,
+     title="MTF Alignment Background")
