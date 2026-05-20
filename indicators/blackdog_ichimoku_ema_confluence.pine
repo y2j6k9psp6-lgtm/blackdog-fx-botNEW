@@ -190,9 +190,11 @@ var line lnTP = na
 if (longSig or shortSig) and i_showLines
     line.delete(lnSL)
     line.delete(lnTP)
-    lnSL := line.new(bar_index, activeSL, bar_index + 40, activeSL,
+    lnSL := line.new(bar_index, activeSL, bar_index + 1, activeSL,
+                     extend=extend.right,
                      color=color.new(#FF1744, 30), width=1, style=line.style_dashed)
-    lnTP := line.new(bar_index, activeTP, bar_index + 40, activeTP,
+    lnTP := line.new(bar_index, activeTP, bar_index + 1, activeTP,
+                     extend=extend.right,
                      color=color.new(#00C853, 30), width=1, style=line.style_dashed)
 
 // ── Plots: SL/TP labels ──────────────────────────────────────────────────
