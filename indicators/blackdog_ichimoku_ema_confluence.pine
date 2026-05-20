@@ -6,7 +6,8 @@ indicator(
      title            = "BlackDog FX — Ichimoku EMA Confluence [1H/4H]",
      shorttitle       = "BD-IEC",
      overlay          = true,
-     max_labels_count = 500
+     max_labels_count = 500,
+     max_lines_count  = 10
  )
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -109,24 +110,40 @@ crossDown = ta.crossunder(tenkan, kijun)
 longSig  = crossUp   and emaBull and aboveCloud and rsiBullOK and inSession
 shortSig = crossDown and emaBear and belowCloud and rsiBearOK and inSession
 
-// ── SL / TP levels (var float → plot, always sticks to candles) ───────────
-var float slLevel    = na
-var float tpLevel    = na
-var int   lastSigBar = na
+// ── SL / TP levels ────────────────────────────────────────────────────────
+// var floats hold the most recent levels for the stats table.
+// Dashed lines drawn with line.new() — the only way to get a dashed style.
+// Each new signal deletes the previous lines so only the latest pair shows.
+var float slLevel = na
+var float tpLevel = na
+var line  lnSL    = na
+var line  lnTP    = na
 
 if longSig
-    slLevel    := close - i_slMult * atr
-    tpLevel    := close + i_tpMult * atr
-    lastSigBar := bar_index
-else if shortSig
-    slLevel    := close + i_slMult * atr
-    tpLevel    := close - i_tpMult * atr
-    lastSigBar := bar_index
+    slLevel := close - i_slMult * atr
+    tpLevel := close + i_tpMult * atr
+    if i_showSLTP
+        line.delete(lnSL)
+        line.delete(lnTP)
+        lnSL := line.new(bar_index, slLevel, bar_index + 1, slLevel,
+                         extend=extend.right, style=line.style_dashed,
+                         color=color.new(#FF1744, 20), width=1)
+        lnTP := line.new(bar_index, tpLevel, bar_index + 1, tpLevel,
+                         extend=extend.right, style=line.style_dashed,
+                         color=color.new(#00C853, 20), width=1)
 
-// Expire after 200 bars so stale levels don't distort the y-axis
-_barsAgo = na(lastSigBar) ? na : bar_index - lastSigBar
-_showSL  = i_showSLTP and not na(slLevel) and not na(_barsAgo) and _barsAgo <= 200
-_showTP  = i_showSLTP and not na(tpLevel) and not na(_barsAgo) and _barsAgo <= 200
+else if shortSig
+    slLevel := close + i_slMult * atr
+    tpLevel := close - i_tpMult * atr
+    if i_showSLTP
+        line.delete(lnSL)
+        line.delete(lnTP)
+        lnSL := line.new(bar_index, slLevel, bar_index + 1, slLevel,
+                         extend=extend.right, style=line.style_dashed,
+                         color=color.new(#FF1744, 20), width=1)
+        lnTP := line.new(bar_index, tpLevel, bar_index + 1, tpLevel,
+                         extend=extend.right, style=line.style_dashed,
+                         color=color.new(#00C853, 20), width=1)
 
 // ── Plots ─────────────────────────────────────────────────────────────────
 
@@ -137,10 +154,6 @@ plot(kijun,  "Kijun-sen",  color=#EF6C00,                   linewidth=2)
 // EMA lines
 plot(i_showEMA ? emaFast : na, "EMA Fast", color=color.new(#FFD600, 40), linewidth=1)
 plot(i_showEMA ? emaSlow : na, "EMA Slow", color=color.new(#CE93D8, 40), linewidth=2)
-
-// SL / TP
-plot(_showSL ? slLevel : na, "Stop Loss",   color=color.new(#FF1744, 20), linewidth=1, style=plot.style_linebr)
-plot(_showTP ? tpLevel : na, "Take Profit", color=color.new(#00C853, 20), linewidth=1, style=plot.style_linebr)
 
 // Entry arrows
 plotshape(longSig,  "Long",  style=shape.triangleup,   location=location.belowbar, color=i_bullCol, size=size.small)
@@ -228,12 +241,12 @@ if barstate.islast
 
     // Row 5 — stop level
     table.cell(tbl, 0, 5, "Stop", bgcolor=C_CELL, text_color=C_LBL, text_size=size.small)
-    _slTxt = na(slLevel) or not _showSL ? "--" : str.tostring(math.round(slLevel, 5))
+    _slTxt = na(slLevel) ? "--" : str.tostring(math.round(slLevel, 5))
     table.cell(tbl, 1, 5, _slTxt, bgcolor=C_CELL, text_color=C_RED, text_size=size.small)
 
     // Row 6 — target level
     table.cell(tbl, 0, 6, "Target", bgcolor=C_CELL, text_color=C_LBL, text_size=size.small)
-    _tpTxt = na(tpLevel) or not _showTP ? "--" : str.tostring(math.round(tpLevel, 5))
+    _tpTxt = na(tpLevel) ? "--" : str.tostring(math.round(tpLevel, 5))
     table.cell(tbl, 1, 6, _tpTxt, bgcolor=C_CELL, text_color=C_GRN, text_size=size.small)
 
 // ── Alerts ────────────────────────────────────────────────────────────────
