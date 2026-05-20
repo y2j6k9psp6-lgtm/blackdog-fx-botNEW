@@ -3,9 +3,10 @@
 
 //@version=6
 indicator(
-     title      = "BlackDog FX — Ichimoku EMA Confluence [1H/4H]",
-     shorttitle = "BD-IEC",
-     overlay    = true
+     title            = "BlackDog FX — Ichimoku EMA Confluence [1H/4H]",
+     shorttitle       = "BD-IEC",
+     overlay          = true,
+     max_labels_count = 500
  )
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -144,6 +145,36 @@ plot(_showTP ? tpLevel : na, "Take Profit", color=color.new(#00C853, 20), linewi
 // Entry arrows
 plotshape(longSig,  "Long",  style=shape.triangleup,   location=location.belowbar, color=i_bullCol, size=size.small)
 plotshape(shortSig, "Short", style=shape.triangledown, location=location.abovebar, color=i_bearCol, size=size.small)
+
+// Signal labels — show TP / SL / R:R next to each arrow
+// label.new() sticks to bar_index on standard candlestick charts
+_rr = str.tostring(math.round(i_tpMult / i_slMult, 1))
+
+if longSig
+    _tp = str.tostring(math.round(close + i_tpMult * atr, 5))
+    _sl = str.tostring(math.round(close - i_slMult * atr, 5))
+    label.new(
+         x         = bar_index,
+         y         = low - atr,
+         text      = "LONG\nTP " + _tp + "\nSL " + _sl + "\nR:R 1:" + _rr,
+         style     = label.style_label_up,
+         color     = color.new(i_bullCol, 75),
+         textcolor = #E0E3EB,
+         size      = size.small
+     )
+
+if shortSig
+    _tp = str.tostring(math.round(close - i_tpMult * atr, 5))
+    _sl = str.tostring(math.round(close + i_slMult * atr, 5))
+    label.new(
+         x         = bar_index,
+         y         = high + atr,
+         text      = "SHORT\nTP " + _tp + "\nSL " + _sl + "\nR:R 1:" + _rr,
+         style     = label.style_label_down,
+         color     = color.new(i_bearCol, 75),
+         textcolor = #E0E3EB,
+         size      = size.small
+     )
 
 // RSI extreme background tint
 bgcolor(i_useRSI and rsiVal > 70 ? color.new(i_bearCol, 92) :
