@@ -56,8 +56,7 @@ var string G_VIS = "Visuals"
 i_tenkanLen  = input.int (9,    "Tenkan-sen Length",   minval=1,    group=G_ICH)
 i_kijunLen   = input.int (26,   "Kijun-sen Length",    minval=1,    group=G_ICH)
 i_senkouBLen = input.int (52,   "Senkou Span B Length",minval=1,    group=G_ICH)
-i_showCloud  = input.bool(false,"Show Kumo Cloud",                  group=G_ICH)
-i_cloudFilter= input.bool(true, "Cloud position filter (price must be above/below cloud)", group=G_ICH)
+i_cloudFilter= input.bool(true, "Cloud position filter (price must be above/below Kumo)", group=G_ICH)
 
 // EMA
 i_emaFast    = input.int (50,   "Fast EMA Period",     minval=1,    group=G_EMA)
@@ -150,20 +149,11 @@ if shortSig
     activeLong := false
 
 // ── Plots: Ichimoku lines ────────────────────────────────────────────────
+// Senkou A/B are intentionally not plotted: offset=26 causes TradingView
+// to misalign the entire indicator frame when zooming. The cloud levels
+// are still used for the signal filter (cloudHi / cloudLo above).
 plot(tenkan, "Tenkan-sen", color=color.new(#29B6F6, 0), linewidth=1)
 plot(kijun,  "Kijun-sen",  color=color.new(#EF6C00, 0), linewidth=2)
-
-pSenkouA = plot(i_showCloud ? senkouA : na, "Senkou A",
-               color=na, offset=26)
-pSenkouB = plot(i_showCloud ? senkouB : na, "Senkou B",
-               color=na, offset=26)
-fill(pSenkouA, pSenkouB,
-     color = i_showCloud
-         ? (senkouA >= senkouB
-             ? color.new(#00C853, 88)
-             : color.new(#FF1744, 88))
-         : na,
-     title = "Kumo")
 
 // ── Plots: EMA lines ─────────────────────────────────────────────────────
 plot(i_showEMA ? emaFast : na, "EMA Fast",
@@ -174,10 +164,10 @@ plot(i_showEMA ? emaSlow : na, "EMA Slow",
 // ── Plots: Entry arrows ──────────────────────────────────────────────────
 plotshape(longSig,  "Long Signal",  style=shape.triangleup,
           location=location.belowbar, color=i_bullCol,
-          size=size.small)
+          size=size.auto)
 plotshape(shortSig, "Short Signal", style=shape.triangledown,
           location=location.abovebar, color=i_bearCol,
-          size=size.small)
+          size=size.auto)
 
 // ── Plots: SL/TP lines (most recent signal) ──────────────────────────────
 var line lnSL = na
