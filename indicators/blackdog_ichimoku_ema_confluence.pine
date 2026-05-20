@@ -158,8 +158,8 @@ if longSig
          y         = low - atr,
          text      = "LONG\nTP " + _tp + "\nSL " + _sl + "\nR:R 1:" + _rr,
          style     = label.style_label_up,
-         color     = color.new(i_bullCol, 75),
-         textcolor = #E0E3EB,
+         color     = color.new(i_bullCol, 15),
+         textcolor = #000000,
          size      = size.small
      )
 
@@ -171,8 +171,8 @@ if shortSig
          y         = high + atr,
          text      = "SHORT\nTP " + _tp + "\nSL " + _sl + "\nR:R 1:" + _rr,
          style     = label.style_label_down,
-         color     = color.new(i_bearCol, 75),
-         textcolor = #E0E3EB,
+         color     = color.new(i_bearCol, 15),
+         textcolor = #000000,
          size      = size.small
      )
 
