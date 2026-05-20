@@ -124,17 +124,23 @@ longSig  = crossUp   and emaBull and aboveCloud and rsiBullOK and inSession
 shortSig = crossDown and emaBear and belowCloud and rsiBearOK and inSession
 
 // ── SL / TP as persistent plot series ───────────────────────────────────
-// Using var float + plot() instead of line.new() so that these levels
-// are rendered as bar series — they always stick to candles on pan/zoom.
-var float slLevel = na
-var float tpLevel = na
+// var float + plot() keeps levels as bar series (always sticks on pan/zoom).
+// Levels expire after 200 bars so stale prices don't distort the y-axis.
+var float slLevel    = na
+var float tpLevel    = na
+var int   lastSigBar = 0
 
 if longSig
-    slLevel := close - i_slMult * atr
-    tpLevel := close + i_tpMult * atr
+    slLevel    := close - i_slMult * atr
+    tpLevel    := close + i_tpMult * atr
+    lastSigBar := bar_index
 else if shortSig
-    slLevel := close + i_slMult * atr
-    tpLevel := close - i_tpMult * atr
+    slLevel    := close + i_slMult * atr
+    tpLevel    := close - i_tpMult * atr
+    lastSigBar := bar_index
+
+_slShow = i_showSLTP and not na(slLevel) and (bar_index - lastSigBar) <= 200
+_tpShow = i_showSLTP and not na(tpLevel) and (bar_index - lastSigBar) <= 200
 
 // ── Plots: Ichimoku lines ─────────────────────────────────────────────────
 // Senkou A/B are not plotted — offset=26 causes TradingView to misalign
@@ -147,8 +153,8 @@ plot(i_showEMA ? emaFast : na, "EMA Fast", color=color.new(#FFD600, 60), linewid
 plot(i_showEMA ? emaSlow : na, "EMA Slow", color=color.new(#CE93D8, 60), linewidth=2)
 
 // ── Plots: SL / TP levels ────────────────────────────────────────────────
-plot(i_showSLTP ? slLevel : na, "Stop Loss",   color=color.new(#FF1744, 30), linewidth=1, style=plot.style_linebr)
-plot(i_showSLTP ? tpLevel : na, "Take Profit", color=color.new(#00C853, 30), linewidth=1, style=plot.style_linebr)
+plot(_slShow ? slLevel : na, "Stop Loss",   color=color.new(#FF1744, 30), linewidth=1, style=plot.style_linebr)
+plot(_tpShow ? tpLevel : na, "Take Profit", color=color.new(#00C853, 30), linewidth=1, style=plot.style_linebr)
 
 // ── Plots: Entry arrows ───────────────────────────────────────────────────
 plotshape(longSig,  "Long Signal",  style=shape.triangleup,
@@ -169,39 +175,39 @@ var table tbl = table.new(position.bottom_right, 2, 7,
                           frame_width =1)
 
 if barstate.islast
-    _bg  = color.new(color.gray, 90)
-    _fg  = color.new(color.white, 0)
-    _hbg = color.new(color.gray, 75)
+    // Solid dark backgrounds — readable on both light and dark chart themes
+    _bg  = #1C2030   // dark navy cell
+    _hbg = #0D1117   // darker header
+    _fg  = #E0E3EB   // off-white text
 
-    table.cell(tbl, 0, 0, "BD-IEC",        bgcolor=_hbg, text_color=_fg, text_size=size.small)
-    table.cell(tbl, 1, 0, timeframe.period, bgcolor=_hbg, text_color=_fg, text_size=size.small)
+    table.cell(tbl, 0, 0, "BD-IEC",        bgcolor=_hbg, text_color=#A0A8C0, text_size=size.small)
+    table.cell(tbl, 1, 0, timeframe.period, bgcolor=_hbg, text_color=#E0E3EB, text_size=size.small)
 
-    table.cell(tbl, 0, 1, "Trend", bgcolor=_bg, text_color=_fg, text_size=size.small)
+    table.cell(tbl, 0, 1, "Trend", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
     _trendStr   = emaFast > emaSlow ? "BULL" : "BEAR"
-    _trendColor = emaFast > emaSlow ? i_bullCol : i_bearCol
+    _trendColor = emaFast > emaSlow ? #00C853 : #FF1744
     table.cell(tbl, 1, 1, _trendStr, bgcolor=_bg, text_color=_trendColor, text_size=size.small)
 
-    table.cell(tbl, 0, 2, "RSI", bgcolor=_bg, text_color=_fg, text_size=size.small)
-    _rsiColor = rsiVal > 60 ? i_bearCol : rsiVal < 40 ? i_bullCol : _fg
+    table.cell(tbl, 0, 2, "RSI", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
+    _rsiColor = rsiVal > 60 ? #FF1744 : rsiVal < 40 ? #00C853 : _fg
     table.cell(tbl, 1, 2, str.tostring(math.round(rsiVal, 1)),
                bgcolor=_bg, text_color=_rsiColor, text_size=size.small)
 
-    table.cell(tbl, 0, 3, "ATR", bgcolor=_bg, text_color=_fg, text_size=size.small)
+    table.cell(tbl, 0, 3, "ATR", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
     table.cell(tbl, 1, 3, str.tostring(math.round(atr, 5)), bgcolor=_bg, text_color=_fg, text_size=size.small)
 
-    table.cell(tbl, 0, 4, "Session", bgcolor=_bg, text_color=_fg, text_size=size.small)
+    table.cell(tbl, 0, 4, "Session", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
+    _sesColor = inSession ? #00C853 : #666B80
     table.cell(tbl, 1, 4, inSession ? "ACTIVE" : "closed",
-               bgcolor=_bg,
-               text_color=inSession ? i_bullCol : color.new(color.gray, 30),
-               text_size=size.small)
+               bgcolor=_bg, text_color=_sesColor, text_size=size.small)
 
-    table.cell(tbl, 0, 5, "Stop", bgcolor=_bg, text_color=_fg, text_size=size.small)
+    table.cell(tbl, 0, 5, "Stop", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
     table.cell(tbl, 1, 5, na(slLevel) ? "--" : str.tostring(math.round(slLevel, 5)),
-               bgcolor=_bg, text_color=color.new(#FF1744, 0), text_size=size.small)
+               bgcolor=_bg, text_color=#FF6B6B, text_size=size.small)
 
-    table.cell(tbl, 0, 6, "Target", bgcolor=_bg, text_color=_fg, text_size=size.small)
+    table.cell(tbl, 0, 6, "Target", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
     table.cell(tbl, 1, 6, na(tpLevel) ? "--" : str.tostring(math.round(tpLevel, 5)),
-               bgcolor=_bg, text_color=color.new(#00C853, 0), text_size=size.small)
+               bgcolor=_bg, text_color=#00E676, text_size=size.small)
 
 // ── Alert conditions ──────────────────────────────────────────────────────
 alertcondition(longSig,  "BD IEC - Long",       "BlackDog IEC LONG on {{ticker}} [{{interval}}]")
