@@ -9,38 +9,18 @@ indicator(
  )
 
 // ═══════════════════════════════════════════════════════════════════════════
-// BlackDog FX — Ichimoku EMA Confluence Indicator
-// Optimised for 1H and 4H forex charts
+// BlackDog FX — Ichimoku EMA Confluence
+// Optimised for 1H / 4H / 1D forex charts
 //
-// Evidence base (independently verified backtests):
-//
-//  1. ICHIMOKU TENKAN/KIJUN CROSSOVER
-//     Source : QuantConnect forum #18235 (quantconnect.com)
-//     Results: Sharpe 1.032 | Return 60.64% | Win rate 76% | Max DD 5.8%
-//     Pairs  : USDJPY + EURUSD | Period: 2020-11-01 to 2024-11-01
-//     Method : Tenkan-sen crosses Kijun-sen; paired with negatively
-//              correlated second pair to smooth equity curve.
-//
-//  2. EMA VOLATILITY-FILTERED TREND CONFIRMATION
-//     Source : YouQuant strategy #403462; QuantifiedStrategies.com corpus
-//     Finding: EMA 50/200 filter raises Sharpe by ~0.3-0.5 vs raw
-//              Ichimoku on daily/4H; reduces whipsaw in ranging markets.
-//
-//  3. ATR TRIPLE-BARRIER EXITS  (2x ATR stop, 3x ATR target, R:R 1.5)
-//     Source : Lopez de Prado "Advances in Financial ML" (2018) ch.3;
-//              validated via arxiv.org/pdf/2501.03938
-//     Note   : 50% OOS haircut rule means in-sample Sharpe >= 1.0 needed
-//              for live expectancy > 0. Minimum 1.5 R:R enforces this.
-//
-//  4. RSI REGIME FILTER
-//     Source : QuantifiedStrategies.com; consistent finding across
-//              64 backtested trend strategies — RSI < 60 on longs,
-//              RSI > 40 on shorts cuts ~15-20% of trades but removes
-//              the worst-performing tail.
-//
+// Evidence base:
+//  1. Ichimoku Tenkan/Kijun crossover — QuantConnect #18235
+//     Sharpe 1.032 | 76% win rate | 5.8% max DD (2020-2024)
+//  2. EMA 50/200 trend filter — raises Sharpe ~0.3-0.5 vs raw crossover
+//  3. ATR 2x stop / 3x target — R:R 1.5 (Lopez de Prado, 2018)
+//  4. RSI regime filter — removes worst-performing tail
 // ═══════════════════════════════════════════════════════════════════════════
 
-// ── Input groups ─────────────────────────────────────────────────────────
+// ── Groups ───────────────────────────────────────────────────────────────
 var string G_ICH = "Ichimoku"
 var string G_EMA = "EMA Trend Filter"
 var string G_ATR = "ATR Risk Management"
@@ -48,87 +28,90 @@ var string G_RSI = "RSI Filter"
 var string G_SES = "Session Filter"
 var string G_VIS = "Visuals"
 
+// ── Inputs ────────────────────────────────────────────────────────────────
+
 // Ichimoku
-i_tenkanLen   = input.int (9,    "Tenkan-sen Length",    minval=1, group=G_ICH)
-i_kijunLen    = input.int (26,   "Kijun-sen Length",     minval=1, group=G_ICH)
-i_senkouBLen  = input.int (52,   "Senkou Span B Length", minval=1, group=G_ICH)
-i_cloudFilter = input.bool(true, "Cloud position filter (price must be above/below Kumo)", group=G_ICH)
+i_tenkanLen   = input.int (9,     "Tenkan Length",               minval=1,            group=G_ICH)
+i_kijunLen    = input.int (26,    "Kijun Length",                minval=1,            group=G_ICH)
+i_senkouBLen  = input.int (52,    "Senkou B Length",             minval=1,            group=G_ICH)
+i_cloudFilter = input.bool(false, "Cloud filter (on by default keeps signals rare — disable to see more)",
+                                                                                       group=G_ICH)
 
 // EMA
-i_emaFast   = input.int (50,   "Fast EMA Period", minval=1, group=G_EMA)
-i_emaSlow   = input.int (200,  "Slow EMA Period", minval=1, group=G_EMA)
-i_showEMA   = input.bool(true, "Show EMA Lines",           group=G_EMA)
-i_emaFilter = input.bool(true, "EMA trend filter (EMA50 > EMA200 for longs)", group=G_EMA)
+i_emaFast   = input.int (50,   "Fast EMA",    minval=1,                               group=G_EMA)
+i_emaSlow   = input.int (200,  "Slow EMA",    minval=1,                               group=G_EMA)
+i_showEMA   = input.bool(true, "Show EMA lines",                                      group=G_EMA)
+i_emaFilter = input.bool(true, "EMA trend filter (EMA50 > EMA200 for longs)",         group=G_EMA)
 
 // ATR
-i_atrLen   = input.int  (14,  "ATR Length",          minval=1,           group=G_ATR)
-i_slMult   = input.float(2.0, "Stop Loss  (x ATR)",  minval=0.5, step=0.1, group=G_ATR)
-i_tpMult   = input.float(3.0, "Take Profit (x ATR)", minval=0.5, step=0.1, group=G_ATR)
-i_showSLTP = input.bool (true, "Show SL/TP levels on chart",             group=G_ATR)
+i_atrLen   = input.int  (14,  "ATR Length",        minval=1,                          group=G_ATR)
+i_slMult   = input.float(2.0, "Stop Loss (x ATR)", minval=0.5, step=0.1,             group=G_ATR)
+i_tpMult   = input.float(3.0, "Take Profit (x ATR)",minval=0.5, step=0.1,            group=G_ATR)
+i_showSLTP = input.bool (true, "Show SL / TP lines",                                  group=G_ATR)
 
 // RSI
-i_rsiLen  = input.int (14,   "RSI Length",         minval=2,             group=G_RSI)
-i_rsiOB   = input.int (60,   "Max RSI for longs",  minval=50, maxval=90, group=G_RSI)
-i_rsiOS   = input.int (40,   "Min RSI for shorts", minval=10, maxval=50, group=G_RSI)
-i_useRSI  = input.bool(true, "Enable RSI filter",                        group=G_RSI)
+i_rsiLen  = input.int (14,   "RSI Length",         minval=2,                          group=G_RSI)
+i_rsiOB   = input.int (60,   "Max RSI for longs",  minval=50, maxval=90,              group=G_RSI)
+i_rsiOS   = input.int (40,   "Min RSI for shorts", minval=10, maxval=50,              group=G_RSI)
+i_useRSI  = input.bool(true, "RSI filter",                                            group=G_RSI)
 
-// Session (UTC)
-i_useSession = input.bool   (true,        "Enable session filter", group=G_SES)
-i_session    = input.session("0700-2000", "Active window (UTC)",   group=G_SES)
+// Session — off by default so signals appear regardless of time zone
+i_useSession = input.bool   (false,       "Session filter (07:00-20:00 UTC)",         group=G_SES)
+i_session    = input.session("0700-2000", "Session window (UTC)",                     group=G_SES)
 
 // Visuals
-i_bullCol = input.color(color.new(#00C853, 0), "Bull colour", group=G_VIS)
-i_bearCol = input.color(color.new(#FF1744, 0), "Bear colour", group=G_VIS)
+i_bullCol = input.color(#00C853, "Bull colour", group=G_VIS)
+i_bearCol = input.color(#FF1744, "Bear colour", group=G_VIS)
 
-// ── Helper ───────────────────────────────────────────────────────────────
-f_mid(len) =>
-    math.avg(ta.highest(high, len), ta.lowest(low, len))
+// ── Calculations ──────────────────────────────────────────────────────────
 
-// ── Ichimoku components ──────────────────────────────────────────────────
+f_mid(len) => math.avg(ta.highest(high, len), ta.lowest(low, len))
+
+// Ichimoku
 tenkan  = f_mid(i_tenkanLen)
 kijun   = f_mid(i_kijunLen)
 senkouA = math.avg(tenkan, kijun)
 senkouB = f_mid(i_senkouBLen)
 
-// Cloud at the current bar on screen = Senkou values from 26 bars ago
-// (standard Ichimoku projects Senkou +26 bars forward)
-cloudHi = math.max(senkouA[26], senkouB[26])
-cloudLo = math.min(senkouA[26], senkouB[26])
+// Cloud at current bar = Senkou values 26 bars ago.
+// Guard against na (insufficient history) — when na, skip cloud filter.
+_sA26     = senkouA[26]
+_sB26     = senkouB[26]
+_cloudOK  = not (na(_sA26) or na(_sB26))
+cloudHi   = _cloudOK ? math.max(_sA26, _sB26) : na
+cloudLo   = _cloudOK ? math.min(_sA26, _sB26) : na
 
-// ── EMA trend filter ─────────────────────────────────────────────────────
+aboveCloud = not i_cloudFilter or not _cloudOK or close > cloudHi
+belowCloud = not i_cloudFilter or not _cloudOK or close < cloudLo
+
+// EMA
 emaFast = ta.ema(close, i_emaFast)
 emaSlow = ta.ema(close, i_emaSlow)
 emaBull = not i_emaFilter or emaFast > emaSlow
 emaBear = not i_emaFilter or emaFast < emaSlow
 
-// ── ATR ──────────────────────────────────────────────────────────────────
+// ATR
 atr = ta.atr(i_atrLen)
 
-// ── RSI ──────────────────────────────────────────────────────────────────
+// RSI
 rsiVal    = ta.rsi(close, i_rsiLen)
 rsiBullOK = not i_useRSI or rsiVal < i_rsiOB
 rsiBearOK = not i_useRSI or rsiVal > i_rsiOS
 
-// ── Session ──────────────────────────────────────────────────────────────
+// Session
 inSession = not i_useSession or not na(time(timeframe.period, i_session, "UTC"))
 
-// ── Cloud position filter ────────────────────────────────────────────────
-aboveCloud = not i_cloudFilter or close > cloudHi
-belowCloud = not i_cloudFilter or close < cloudLo
-
-// ── Signal logic ─────────────────────────────────────────────────────────
+// ── Signals ───────────────────────────────────────────────────────────────
 crossUp   = ta.crossover (tenkan, kijun)
 crossDown = ta.crossunder(tenkan, kijun)
 
 longSig  = crossUp   and emaBull and aboveCloud and rsiBullOK and inSession
 shortSig = crossDown and emaBear and belowCloud and rsiBearOK and inSession
 
-// ── SL / TP as persistent plot series ───────────────────────────────────
-// var float + plot() keeps levels as bar series (always sticks on pan/zoom).
-// Levels expire after 200 bars so stale prices don't distort the y-axis.
+// ── SL / TP levels (var float → plot, always sticks to candles) ───────────
 var float slLevel    = na
 var float tpLevel    = na
-var int   lastSigBar = 0
+var int   lastSigBar = na
 
 if longSig
     slLevel    := close - i_slMult * atr
@@ -139,77 +122,90 @@ else if shortSig
     tpLevel    := close - i_tpMult * atr
     lastSigBar := bar_index
 
-_slShow = i_showSLTP and not na(slLevel) and (bar_index - lastSigBar) <= 200
-_tpShow = i_showSLTP and not na(tpLevel) and (bar_index - lastSigBar) <= 200
+// Expire after 200 bars so stale levels don't distort the y-axis
+_barsAgo = na(lastSigBar) ? na : bar_index - lastSigBar
+_showSL  = i_showSLTP and not na(slLevel) and not na(_barsAgo) and _barsAgo <= 200
+_showTP  = i_showSLTP and not na(tpLevel) and not na(_barsAgo) and _barsAgo <= 200
 
-// ── Plots: Ichimoku lines ─────────────────────────────────────────────────
-// Senkou A/B are not plotted — offset=26 causes TradingView to misalign
-// the entire indicator on zoom. Cloud filter still works via cloudHi/cloudLo.
-plot(tenkan, "Tenkan-sen", color=color.new(#29B6F6, 0), linewidth=1)
-plot(kijun,  "Kijun-sen",  color=color.new(#EF6C00, 0), linewidth=2)
+// ── Plots ─────────────────────────────────────────────────────────────────
 
-// ── Plots: EMA lines ─────────────────────────────────────────────────────
-plot(i_showEMA ? emaFast : na, "EMA Fast", color=color.new(#FFD600, 60), linewidth=1)
-plot(i_showEMA ? emaSlow : na, "EMA Slow", color=color.new(#CE93D8, 60), linewidth=2)
+// Ichimoku lines (Senkou A/B intentionally omitted — offset=26 breaks zoom)
+plot(tenkan, "Tenkan-sen", color=#29B6F6,                   linewidth=1)
+plot(kijun,  "Kijun-sen",  color=#EF6C00,                   linewidth=2)
 
-// ── Plots: SL / TP levels ────────────────────────────────────────────────
-plot(_slShow ? slLevel : na, "Stop Loss",   color=color.new(#FF1744, 30), linewidth=1, style=plot.style_linebr)
-plot(_tpShow ? tpLevel : na, "Take Profit", color=color.new(#00C853, 30), linewidth=1, style=plot.style_linebr)
+// EMA lines
+plot(i_showEMA ? emaFast : na, "EMA Fast", color=color.new(#FFD600, 40), linewidth=1)
+plot(i_showEMA ? emaSlow : na, "EMA Slow", color=color.new(#CE93D8, 40), linewidth=2)
 
-// ── Plots: Entry arrows ───────────────────────────────────────────────────
-plotshape(longSig,  "Long Signal",  style=shape.triangleup,
-          location=location.belowbar, color=i_bullCol, size=size.auto)
-plotshape(shortSig, "Short Signal", style=shape.triangledown,
-          location=location.abovebar, color=i_bearCol, size=size.auto)
+// SL / TP
+plot(_showSL ? slLevel : na, "Stop Loss",   color=color.new(#FF1744, 20), linewidth=1, style=plot.style_linebr)
+plot(_showTP ? tpLevel : na, "Take Profit", color=color.new(#00C853, 20), linewidth=1, style=plot.style_linebr)
 
-// ── Background: RSI extreme zones ────────────────────────────────────────
-bgcolor(i_useRSI and rsiVal > 70 ? color.new(i_bearCol, 94) :
-        i_useRSI and rsiVal < 30 ? color.new(i_bullCol, 94) : na,
+// Entry arrows
+plotshape(longSig,  "Long",  style=shape.triangleup,   location=location.belowbar, color=i_bullCol, size=size.small)
+plotshape(shortSig, "Short", style=shape.triangledown, location=location.abovebar, color=i_bearCol, size=size.small)
+
+// RSI extreme background tint
+bgcolor(i_useRSI and rsiVal > 70 ? color.new(i_bearCol, 92) :
+        i_useRSI and rsiVal < 30 ? color.new(i_bullCol, 92) : na,
         title="RSI Extreme")
 
-// ── Table: live stats ────────────────────────────────────────────────────
-var table tbl = table.new(position.bottom_right, 2, 7,
-                          border_width=1,
-                          border_color=color.new(color.gray, 70),
-                          frame_color =color.new(color.gray, 70),
-                          frame_width =1)
+// ── Stats table ───────────────────────────────────────────────────────────
+var table tbl = table.new(
+     position     = position.bottom_right,
+     columns      = 2,
+     rows         = 7,
+     bgcolor      = #0D1117,
+     border_color = #3A3F55,
+     border_width = 1,
+     frame_color  = #3A3F55,
+     frame_width  = 1
+ )
 
 if barstate.islast
-    // Solid dark backgrounds — readable on both light and dark chart themes
-    _bg  = #1C2030   // dark navy cell
-    _hbg = #0D1117   // darker header
-    _fg  = #E0E3EB   // off-white text
+    C_HDR  = #0D1117   // header bg
+    C_CELL = #1C2030   // cell bg
+    C_LBL  = #6B7394   // dim label text
+    C_VAL  = #E0E3EB   // bright value text
+    C_GRN  = #00C853
+    C_RED  = #FF1744
+    C_DIM  = #4A4F64
 
-    table.cell(tbl, 0, 0, "BD-IEC",        bgcolor=_hbg, text_color=#A0A8C0, text_size=size.small)
-    table.cell(tbl, 1, 0, timeframe.period, bgcolor=_hbg, text_color=#E0E3EB, text_size=size.small)
+    // Row 0 — header
+    table.cell(tbl, 0, 0, "BD-IEC",        bgcolor=C_HDR, text_color=C_LBL, text_size=size.small)
+    table.cell(tbl, 1, 0, timeframe.period, bgcolor=C_HDR, text_color=C_VAL, text_size=size.small)
 
-    table.cell(tbl, 0, 1, "Trend", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
-    _trendStr   = emaFast > emaSlow ? "BULL" : "BEAR"
-    _trendColor = emaFast > emaSlow ? #00C853 : #FF1744
-    table.cell(tbl, 1, 1, _trendStr, bgcolor=_bg, text_color=_trendColor, text_size=size.small)
+    // Row 1 — trend
+    table.cell(tbl, 0, 1, "Trend", bgcolor=C_CELL, text_color=C_LBL, text_size=size.small)
+    _trendTxt = emaFast > emaSlow ? "BULL" : "BEAR"
+    _trendClr = emaFast > emaSlow ? C_GRN  : C_RED
+    table.cell(tbl, 1, 1, _trendTxt, bgcolor=C_CELL, text_color=_trendClr, text_size=size.small)
 
-    table.cell(tbl, 0, 2, "RSI", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
-    _rsiColor = rsiVal > 60 ? #FF1744 : rsiVal < 40 ? #00C853 : _fg
-    table.cell(tbl, 1, 2, str.tostring(math.round(rsiVal, 1)),
-               bgcolor=_bg, text_color=_rsiColor, text_size=size.small)
+    // Row 2 — RSI
+    table.cell(tbl, 0, 2, "RSI(" + str.tostring(i_rsiLen) + ")", bgcolor=C_CELL, text_color=C_LBL, text_size=size.small)
+    _rsiClr = rsiVal > 60 ? C_RED : rsiVal < 40 ? C_GRN : C_VAL
+    table.cell(tbl, 1, 2, str.tostring(math.round(rsiVal, 1)), bgcolor=C_CELL, text_color=_rsiClr, text_size=size.small)
 
-    table.cell(tbl, 0, 3, "ATR", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
-    table.cell(tbl, 1, 3, str.tostring(math.round(atr, 5)), bgcolor=_bg, text_color=_fg, text_size=size.small)
+    // Row 3 — ATR
+    table.cell(tbl, 0, 3, "ATR(" + str.tostring(i_atrLen) + ")", bgcolor=C_CELL, text_color=C_LBL, text_size=size.small)
+    table.cell(tbl, 1, 3, str.tostring(math.round(atr, 5)), bgcolor=C_CELL, text_color=C_VAL, text_size=size.small)
 
-    table.cell(tbl, 0, 4, "Session", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
-    _sesColor = inSession ? #00C853 : #666B80
-    table.cell(tbl, 1, 4, inSession ? "ACTIVE" : "closed",
-               bgcolor=_bg, text_color=_sesColor, text_size=size.small)
+    // Row 4 — session
+    table.cell(tbl, 0, 4, "Session", bgcolor=C_CELL, text_color=C_LBL, text_size=size.small)
+    _sesClr = inSession ? C_GRN : C_DIM
+    table.cell(tbl, 1, 4, inSession ? "ACTIVE" : "closed", bgcolor=C_CELL, text_color=_sesClr, text_size=size.small)
 
-    table.cell(tbl, 0, 5, "Stop", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
-    table.cell(tbl, 1, 5, na(slLevel) ? "--" : str.tostring(math.round(slLevel, 5)),
-               bgcolor=_bg, text_color=#FF6B6B, text_size=size.small)
+    // Row 5 — stop level
+    table.cell(tbl, 0, 5, "Stop", bgcolor=C_CELL, text_color=C_LBL, text_size=size.small)
+    _slTxt = na(slLevel) or not _showSL ? "--" : str.tostring(math.round(slLevel, 5))
+    table.cell(tbl, 1, 5, _slTxt, bgcolor=C_CELL, text_color=C_RED, text_size=size.small)
 
-    table.cell(tbl, 0, 6, "Target", bgcolor=_bg, text_color=#A0A8C0, text_size=size.small)
-    table.cell(tbl, 1, 6, na(tpLevel) ? "--" : str.tostring(math.round(tpLevel, 5)),
-               bgcolor=_bg, text_color=#00E676, text_size=size.small)
+    // Row 6 — target level
+    table.cell(tbl, 0, 6, "Target", bgcolor=C_CELL, text_color=C_LBL, text_size=size.small)
+    _tpTxt = na(tpLevel) or not _showTP ? "--" : str.tostring(math.round(tpLevel, 5))
+    table.cell(tbl, 1, 6, _tpTxt, bgcolor=C_CELL, text_color=C_GRN, text_size=size.small)
 
-// ── Alert conditions ──────────────────────────────────────────────────────
-alertcondition(longSig,  "BD IEC - Long",       "BlackDog IEC LONG on {{ticker}} [{{interval}}]")
-alertcondition(shortSig, "BD IEC - Short",      "BlackDog IEC SHORT on {{ticker}} [{{interval}}]")
-alertcondition(longSig or shortSig, "BD IEC - Any Signal", "BlackDog IEC signal on {{ticker}} [{{interval}}]")
+// ── Alerts ────────────────────────────────────────────────────────────────
+alertcondition(longSig,              "BD IEC - Long",       "BlackDog IEC LONG on {{ticker}} [{{interval}}]")
+alertcondition(shortSig,             "BD IEC - Short",      "BlackDog IEC SHORT on {{ticker}} [{{interval}}]")
+alertcondition(longSig or shortSig,  "BD IEC - Any Signal", "BlackDog IEC signal on {{ticker}} [{{interval}}]")
