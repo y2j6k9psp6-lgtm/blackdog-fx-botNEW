@@ -1,7 +1,7 @@
 // This source code is subject to the terms of the Mozilla Public License 2.0
 // © blackdog-fx-botNEW
 
-//@version=5
+//@version=6
 indicator(
      title     = "BlackDog FX — Ichimoku EMA Confluence [1H/4H]",
      shorttitle = "BD·IEC",
