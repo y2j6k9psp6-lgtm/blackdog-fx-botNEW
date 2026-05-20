@@ -4,7 +4,7 @@
 //@version=6
 indicator(
      title     = "BlackDog FX — Ichimoku EMA Confluence [1H/4H]",
-     shorttitle = "BD·IEC",
+     shorttitle = "BD-IEC",
      overlay   = true,
      max_labels_count = 500,
      max_lines_count  = 500
@@ -45,12 +45,12 @@ indicator(
 // ═══════════════════════════════════════════════════════════════════════════
 
 // ── Input groups ─────────────────────────────────────────────────────────
-var string G_ICH = "● Ichimoku"
-var string G_EMA = "● EMA Trend Filter"
-var string G_ATR = "● ATR Risk Management"
-var string G_RSI = "● RSI Filter"
-var string G_SES = "● Session Filter"
-var string G_VIS = "● Visuals"
+var string G_ICH = "Ichimoku"
+var string G_EMA = "EMA Trend Filter"
+var string G_ATR = "ATR Risk Management"
+var string G_RSI = "RSI Filter"
+var string G_SES = "Session Filter"
+var string G_VIS = "Visuals"
 
 // Ichimoku
 i_tenkanLen  = input.int (9,    "Tenkan-sen Length",   minval=1,    group=G_ICH)
@@ -165,10 +165,6 @@ fill(pSenkouA, pSenkouB,
          : na,
      title = "Kumo")
 
-// Chikou span
-plot(close, "Chikou-span", color=color.new(#9C27B0, 60),
-     linewidth=1, offset=-26)
-
 // ── Plots: EMA lines ─────────────────────────────────────────────────────
 plot(i_showEMA ? emaFast : na, "EMA Fast",
      color=color.new(#FFD600, 60), linewidth=1)
@@ -241,7 +237,7 @@ if barstate.islast
     _fg  = color.new(color.white, 0)
     _hbg = color.new(color.gray, 75)
 
-    table.cell(tbl, 0, 0, "BD·IEC",          bgcolor=_hbg, text_color=_fg, text_size=size.small)
+    table.cell(tbl, 0, 0, "BD-IEC",          bgcolor=_hbg, text_color=_fg, text_size=size.small)
     table.cell(tbl, 1, 0, timeframe.period,   bgcolor=_hbg, text_color=_fg, text_size=size.small)
 
     table.cell(tbl, 0, 1, "RSI(" + str.tostring(i_rsiLen) + ")", bgcolor=_bg, text_color=_fg, text_size=size.small)
