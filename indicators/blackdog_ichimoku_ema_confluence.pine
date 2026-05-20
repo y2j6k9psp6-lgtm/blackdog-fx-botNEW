@@ -170,9 +170,9 @@ plot(close, "Chikou-span", color=color.new(#9C27B0, 60),
      linewidth=1, offset=-26)
 
 // ── Plots: EMA lines ─────────────────────────────────────────────────────
-plot(i_showEMA ? emaFast : na, "EMA " + str.tostring(i_emaFast),
+plot(i_showEMA ? emaFast : na, "EMA Fast",
      color=color.new(#FFD600, 60), linewidth=1)
-plot(i_showEMA ? emaSlow : na, "EMA " + str.tostring(i_emaSlow),
+plot(i_showEMA ? emaSlow : na, "EMA Slow",
      color=color.new(#CE93D8, 60), linewidth=2)
 
 // ── Plots: Entry arrows ──────────────────────────────────────────────────
@@ -196,9 +196,9 @@ if (longSig or shortSig) and i_showLines
                      color=color.new(#00C853, 30), width=1, style=line.style_dashed)
 
 // ── Plots: SL/TP labels ──────────────────────────────────────────────────
-_sz = i_lblSize == "tiny"   ? size.tiny   :
-      i_lblSize == "small"  ? size.small  :
-      i_lblSize == "large"  ? size.large  : size.normal
+_sz = (i_lblSize == "tiny"  ? size.tiny  :
+       i_lblSize == "small" ? size.small :
+       i_lblSize == "large" ? size.large : size.normal)
 
 _rr = str.tostring(math.round(i_tpMult / i_slMult, 2))
 
