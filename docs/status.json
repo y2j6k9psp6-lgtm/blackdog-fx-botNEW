@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-06-05 16:43:05 UTC",
+  "last_updated": "2026-06-05 18:31:35 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
   "pairs": [
     {
       "symbol": "EURUSD",
-      "price": 1.153,
+      "price": 1.1526,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -65,7 +65,7 @@
     },
     {
       "symbol": "USDJPY",
-      "price": 160.286,
+      "price": 160.23599,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -124,7 +124,7 @@
     },
     {
       "symbol": "GBPUSD",
-      "price": 1.3349,
+      "price": 1.33396,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -183,7 +183,7 @@
     },
     {
       "symbol": "AUDUSD",
-      "price": 0.70557,
+      "price": 0.70487,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -242,7 +242,7 @@
     },
     {
       "symbol": "USDCAD",
-      "price": 1.3937,
+      "price": 1.39455,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -301,7 +301,7 @@
     },
     {
       "symbol": "USDCHF",
-      "price": 0.79579,
+      "price": 0.79649,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -360,7 +360,7 @@
     },
     {
       "symbol": "NZDUSD",
-      "price": 0.58048,
+      "price": 0.58008,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -419,7 +419,7 @@
     },
     {
       "symbol": "EURJPY",
-      "price": 184.76199,
+      "price": 184.63,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -478,7 +478,7 @@
     },
     {
       "symbol": "GBPJPY",
-      "price": 213.94501,
+      "price": 213.724,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -537,8 +537,8 @@
     },
     {
       "symbol": "EURGBP",
-      "price": 0.86353,
-      "signal": "WAIT",
+      "price": 0.86385,
+      "signal": "SELL",
       "direction": "BEAR",
       "conditions": {
         "trend": false,
@@ -546,9 +546,9 @@
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": true,
-        "ses": false
+        "ses": true
       },
-      "conditions_met": 4,
+      "conditions_met": 5,
       "rationale": [
         {
           "key": "trend",
@@ -589,8 +589,8 @@
           "key": "ses",
           "icon": "\u26a1",
           "label": "SES Entry Arrow (15M Trigger)",
-          "met": false,
-          "text": "No SES arrow yet. Watching for price to cross the channel band on the 15M chart."
+          "met": true,
+          "text": "SES red arrow fired on 15M \u2014 all 6 conditions met. Place pending SELL 2-3 pips below this bar's low."
         }
       ]
     }
