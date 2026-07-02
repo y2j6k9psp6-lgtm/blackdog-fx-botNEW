@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-07-02 08:33:13 UTC",
+  "last_updated": "2026-07-02 11:15:27 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
   "pairs": [
     {
       "symbol": "EURUSD",
-      "price": 1.14194,
+      "price": 1.14142,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -65,7 +65,7 @@
     },
     {
       "symbol": "USDJPY",
-      "price": 161.20399,
+      "price": 161.37601,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -73,10 +73,10 @@
         "channel": true,
         "macd": true,
         "mtf_1h": true,
-        "mtf_4h": false,
+        "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -110,8 +110,8 @@
           "key": "mtf_4h",
           "icon": "\ud83d\udcc5",
           "label": "4H Trend Filter",
-          "met": false,
-          "text": "4H MACD not aligned. The 4-hour trend does not yet support this direction. Wait for the bigger picture to confirm."
+          "met": true,
+          "text": "4H MACD BELOW zero \u2014 the 4-hour trend agrees. All three timeframes aligned bearish. High-conviction setup."
         },
         {
           "key": "ses",
@@ -124,7 +124,7 @@
     },
     {
       "symbol": "GBPUSD",
-      "price": 1.33488,
+      "price": 1.333,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -183,14 +183,14 @@
     },
     {
       "symbol": "AUDUSD",
-      "price": 0.6907,
+      "price": 0.68989,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
         "trend": true,
-        "channel": true,
+        "channel": false,
         "macd": true,
-        "mtf_1h": false,
+        "mtf_1h": true,
         "mtf_4h": false,
         "ses": false
       },
@@ -207,8 +207,8 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": true,
-          "text": "Price ABOVE the upper channel band (50 EMA of Highs). Bulls broken out of the channel."
+          "met": false,
+          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
         },
         {
           "key": "macd",
@@ -221,8 +221,8 @@
           "key": "mtf_1h",
           "icon": "\ud83d\udd50",
           "label": "1H MACD Confirmation",
-          "met": false,
-          "text": "1H MACD not yet aligned. The hourly chart does not confirm this trade direction."
+          "met": true,
+          "text": "1H MACD ABOVE zero \u2014 the 1-hour chart confirms bullish momentum. First confirmation layer passed."
         },
         {
           "key": "mtf_4h",
@@ -242,18 +242,18 @@
     },
     {
       "symbol": "USDCAD",
-      "price": 1.4187,
+      "price": 1.42065,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
         "trend": false,
-        "channel": true,
+        "channel": false,
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": false,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 2,
       "rationale": [
         {
           "key": "trend",
@@ -266,8 +266,8 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": true,
-          "text": "Price BELOW the lower channel band (50 EMA of Lows). Bears broken down through the channel."
+          "met": false,
+          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
         },
         {
           "key": "macd",
@@ -301,7 +301,7 @@
     },
     {
       "symbol": "USDCHF",
-      "price": 0.8051,
+      "price": 0.80562,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -360,18 +360,18 @@
     },
     {
       "symbol": "NZDUSD",
-      "price": 0.56905,
+      "price": 0.56815,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
         "trend": true,
-        "channel": true,
+        "channel": false,
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 5,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -384,8 +384,8 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": true,
-          "text": "Price ABOVE the upper channel band (50 EMA of Highs). Bulls broken out of the channel."
+          "met": false,
+          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
         },
         {
           "key": "macd",
@@ -419,7 +419,7 @@
     },
     {
       "symbol": "EURJPY",
-      "price": 184.037,
+      "price": 184.11099,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -427,10 +427,10 @@
         "channel": true,
         "macd": true,
         "mtf_1h": true,
-        "mtf_4h": false,
+        "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -464,8 +464,8 @@
           "key": "mtf_4h",
           "icon": "\ud83d\udcc5",
           "label": "4H Trend Filter",
-          "met": false,
-          "text": "4H MACD not aligned. The 4-hour trend does not yet support this direction. Wait for the bigger picture to confirm."
+          "met": true,
+          "text": "4H MACD BELOW zero \u2014 the 4-hour trend agrees. All three timeframes aligned bearish. High-conviction setup."
         },
         {
           "key": "ses",
@@ -478,7 +478,7 @@
     },
     {
       "symbol": "GBPJPY",
-      "price": 215.17799,
+      "price": 215.132,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -537,7 +537,7 @@
     },
     {
       "symbol": "EURGBP",
-      "price": 0.85522,
+      "price": 0.856,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
