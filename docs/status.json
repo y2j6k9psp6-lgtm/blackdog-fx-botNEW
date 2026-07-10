@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-07-10 19:45:49 UTC",
+  "last_updated": "2026-07-10 20:55:55 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
   "pairs": [
     {
       "symbol": "EURUSD",
-      "price": 1.14181,
+      "price": 1.14168,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -65,7 +65,7 @@
     },
     {
       "symbol": "USDJPY",
-      "price": 161.733,
+      "price": 161.722,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -124,7 +124,7 @@
     },
     {
       "symbol": "GBPUSD",
-      "price": 1.33969,
+      "price": 1.33964,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -183,7 +183,7 @@
     },
     {
       "symbol": "AUDUSD",
-      "price": 0.69541,
+      "price": 0.69551,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -242,7 +242,7 @@
     },
     {
       "symbol": "USDCAD",
-      "price": 1.41552,
+      "price": 1.41563,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -301,7 +301,7 @@
     },
     {
       "symbol": "USDCHF",
-      "price": 0.80871,
+      "price": 0.80876,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -419,7 +419,7 @@
     },
     {
       "symbol": "EURJPY",
-      "price": 184.606,
+      "price": 184.575,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -478,7 +478,7 @@
     },
     {
       "symbol": "GBPJPY",
-      "price": 216.655,
+      "price": 216.634,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -537,18 +537,18 @@
     },
     {
       "symbol": "EURGBP",
-      "price": 0.85205,
+      "price": 0.85193,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
         "trend": false,
         "channel": false,
-        "macd": false,
+        "macd": true,
         "mtf_1h": true,
         "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 2,
+      "conditions_met": 3,
       "rationale": [
         {
           "key": "trend",
@@ -568,8 +568,8 @@
           "key": "macd",
           "icon": "\ud83d\udcc9",
           "label": "MACD 15M (10-20-1)",
-          "met": false,
-          "text": "15M MACD is on the wrong side of zero. Entry timeframe momentum not yet aligned."
+          "met": true,
+          "text": "15M MACD is BELOW zero \u2014 bearish momentum confirmed on the entry timeframe."
         },
         {
           "key": "mtf_1h",
