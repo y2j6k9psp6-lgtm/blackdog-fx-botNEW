@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-08-06 13:18:44 UTC",
+  "last_updated": "2026-08-06 15:34:58 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
   "pairs": [
     {
       "symbol": "EURUSD",
-      "price": 1.1542,
+      "price": 1.15274,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -65,7 +65,7 @@
     },
     {
       "symbol": "USDJPY",
-      "price": 157.918,
+      "price": 158.414,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -124,18 +124,18 @@
     },
     {
       "symbol": "GBPUSD",
-      "price": 1.34662,
+      "price": 1.34542,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
         "trend": true,
-        "channel": true,
-        "macd": true,
+        "channel": false,
+        "macd": false,
         "mtf_1h": true,
         "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 5,
+      "conditions_met": 3,
       "rationale": [
         {
           "key": "trend",
@@ -148,15 +148,15 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": true,
-          "text": "Price ABOVE the upper channel band (50 EMA of Highs). Bulls broken out of the channel."
+          "met": false,
+          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
         },
         {
           "key": "macd",
           "icon": "\ud83d\udcc9",
           "label": "MACD 15M (10-20-1)",
-          "met": true,
-          "text": "15M MACD is ABOVE zero \u2014 bullish momentum confirmed on the entry timeframe."
+          "met": false,
+          "text": "15M MACD is on the wrong side of zero. Entry timeframe momentum not yet aligned."
         },
         {
           "key": "mtf_1h",
@@ -183,7 +183,7 @@
     },
     {
       "symbol": "AUDUSD",
-      "price": 0.70363,
+      "price": 0.70373,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -242,18 +242,18 @@
     },
     {
       "symbol": "USDCAD",
-      "price": 1.40172,
+      "price": 1.40328,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
         "trend": false,
         "channel": false,
-        "macd": true,
+        "macd": false,
         "mtf_1h": true,
         "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 2,
       "rationale": [
         {
           "key": "trend",
@@ -273,8 +273,8 @@
           "key": "macd",
           "icon": "\ud83d\udcc9",
           "label": "MACD 15M (10-20-1)",
-          "met": true,
-          "text": "15M MACD is BELOW zero \u2014 bearish momentum confirmed on the entry timeframe."
+          "met": false,
+          "text": "15M MACD is on the wrong side of zero. Entry timeframe momentum not yet aligned."
         },
         {
           "key": "mtf_1h",
@@ -301,7 +301,7 @@
     },
     {
       "symbol": "USDCHF",
-      "price": 0.81005,
+      "price": 0.81254,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -360,16 +360,16 @@
     },
     {
       "symbol": "NZDUSD",
-      "price": 0.58779,
+      "price": 0.58744,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
         "trend": false,
         "channel": true,
-        "macd": false,
+        "macd": true,
         "mtf_1h": true,
         "mtf_4h": false,
-        "ses": true
+        "ses": false
       },
       "conditions_met": 3,
       "rationale": [
@@ -391,8 +391,8 @@
           "key": "macd",
           "icon": "\ud83d\udcc9",
           "label": "MACD 15M (10-20-1)",
-          "met": false,
-          "text": "15M MACD is on the wrong side of zero. Entry timeframe momentum not yet aligned."
+          "met": true,
+          "text": "15M MACD is BELOW zero \u2014 bearish momentum confirmed on the entry timeframe."
         },
         {
           "key": "mtf_1h",
@@ -412,25 +412,25 @@
           "key": "ses",
           "icon": "\u26a1",
           "label": "SES Entry Arrow (15M Trigger)",
-          "met": true,
-          "text": "SES red arrow fired on 15M \u2014 all 6 conditions met. Place pending SELL 2-3 pips below this bar's low."
+          "met": false,
+          "text": "No SES arrow yet. Watching for price to cross the channel band on the 15M chart."
         }
       ]
     },
     {
       "symbol": "EURJPY",
-      "price": 182.21001,
+      "price": 182.545,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
         "trend": true,
-        "channel": false,
+        "channel": true,
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": false,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -443,8 +443,8 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": false,
-          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
+          "met": true,
+          "text": "Price ABOVE the upper channel band (50 EMA of Highs). Bulls broken out of the channel."
         },
         {
           "key": "macd",
@@ -478,7 +478,7 @@
     },
     {
       "symbol": "GBPJPY",
-      "price": 212.653,
+      "price": 213.10899,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -537,7 +537,7 @@
     },
     {
       "symbol": "EURGBP",
-      "price": 0.8568,
+      "price": 0.85655,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
