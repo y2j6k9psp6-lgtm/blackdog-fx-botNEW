@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-08-17 14:03:40 UTC",
+  "last_updated": "2026-08-17 14:39:59 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
   "pairs": [
     {
       "symbol": "EURUSD",
-      "price": 1.15982,
+      "price": 1.15969,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -15,9 +15,9 @@
         "macd": false,
         "mtf_1h": true,
         "mtf_4h": true,
-        "ses": true
+        "ses": false
       },
-      "conditions_met": 5,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -58,14 +58,14 @@
           "key": "ses",
           "icon": "\u26a1",
           "label": "SES Entry Arrow (15M Trigger)",
-          "met": true,
-          "text": "SES blue arrow fired on 15M \u2014 all 6 conditions met. Place pending BUY 2-3 pips above this bar's high."
+          "met": false,
+          "text": "No SES arrow yet. Watching for price to cross the channel band on the 15M chart."
         }
       ]
     },
     {
       "symbol": "USDJPY",
-      "price": 159.263,
+      "price": 159.239,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -124,8 +124,8 @@
     },
     {
       "symbol": "GBPUSD",
-      "price": 1.35604,
-      "signal": "BUY",
+      "price": 1.35613,
+      "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
         "trend": true,
@@ -133,9 +133,9 @@
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": true,
-        "ses": true
+        "ses": false
       },
-      "conditions_met": 6,
+      "conditions_met": 5,
       "rationale": [
         {
           "key": "trend",
@@ -176,14 +176,14 @@
           "key": "ses",
           "icon": "\u26a1",
           "label": "SES Entry Arrow (15M Trigger)",
-          "met": true,
-          "text": "SES blue arrow fired on 15M \u2014 all 6 conditions met. Place pending BUY 2-3 pips above this bar's high."
+          "met": false,
+          "text": "No SES arrow yet. Watching for price to cross the channel band on the 15M chart."
         }
       ]
     },
     {
       "symbol": "AUDUSD",
-      "price": 0.71185,
+      "price": 0.71225,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -192,9 +192,9 @@
         "macd": false,
         "mtf_1h": true,
         "mtf_4h": true,
-        "ses": true
+        "ses": false
       },
-      "conditions_met": 5,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -235,14 +235,14 @@
           "key": "ses",
           "icon": "\u26a1",
           "label": "SES Entry Arrow (15M Trigger)",
-          "met": true,
-          "text": "SES blue arrow fired on 15M \u2014 all 6 conditions met. Place pending BUY 2-3 pips above this bar's high."
+          "met": false,
+          "text": "No SES arrow yet. Watching for price to cross the channel band on the 15M chart."
         }
       ]
     },
     {
       "symbol": "USDCAD",
-      "price": 1.38518,
+      "price": 1.38515,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -301,7 +301,7 @@
     },
     {
       "symbol": "USDCHF",
-      "price": 0.80887,
+      "price": 0.80898,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -360,7 +360,7 @@
     },
     {
       "symbol": "NZDUSD",
-      "price": 0.592,
+      "price": 0.59182,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -369,9 +369,9 @@
         "macd": false,
         "mtf_1h": true,
         "mtf_4h": true,
-        "ses": true
+        "ses": false
       },
-      "conditions_met": 5,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -412,14 +412,14 @@
           "key": "ses",
           "icon": "\u26a1",
           "label": "SES Entry Arrow (15M Trigger)",
-          "met": true,
-          "text": "SES blue arrow fired on 15M \u2014 all 6 conditions met. Place pending BUY 2-3 pips above this bar's high."
+          "met": false,
+          "text": "No SES arrow yet. Watching for price to cross the channel band on the 15M chart."
         }
       ]
     },
     {
       "symbol": "EURJPY",
-      "price": 184.657,
+      "price": 184.61099,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -478,7 +478,7 @@
     },
     {
       "symbol": "GBPJPY",
-      "price": 215.95599,
+      "price": 215.944,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -537,7 +537,7 @@
     },
     {
       "symbol": "EURGBP",
-      "price": 0.85507,
+      "price": 0.85486,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
