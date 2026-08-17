@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-17 08:03:22 UTC",
+  "last_updated": "2026-08-17 08:56:51 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
@@ -65,18 +65,18 @@
     },
     {
       "symbol": "USDJPY",
-      "price": 158.952,
+      "price": 159.069,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
         "trend": false,
-        "channel": true,
+        "channel": false,
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": false,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 2,
       "rationale": [
         {
           "key": "trend",
@@ -89,8 +89,8 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": true,
-          "text": "Price BELOW the lower channel band (50 EMA of Lows). Bears broken down through the channel."
+          "met": false,
+          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
         },
         {
           "key": "macd",
@@ -124,7 +124,7 @@
     },
     {
       "symbol": "GBPUSD",
-      "price": 1.3563,
+      "price": 1.35606,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -183,7 +183,7 @@
     },
     {
       "symbol": "AUDUSD",
-      "price": 0.7123,
+      "price": 0.7125,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -242,7 +242,7 @@
     },
     {
       "symbol": "USDCAD",
-      "price": 1.38568,
+      "price": 1.38551,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -301,7 +301,7 @@
     },
     {
       "symbol": "USDCHF",
-      "price": 0.80828,
+      "price": 0.80805,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -360,7 +360,7 @@
     },
     {
       "symbol": "NZDUSD",
-      "price": 0.59221,
+      "price": 0.59245,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -419,7 +419,7 @@
     },
     {
       "symbol": "EURJPY",
-      "price": 184.485,
+      "price": 184.61099,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -478,18 +478,18 @@
     },
     {
       "symbol": "GBPJPY",
-      "price": 215.58299,
+      "price": 215.714,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
         "trend": true,
-        "channel": false,
-        "macd": false,
+        "channel": true,
+        "macd": true,
         "mtf_1h": true,
         "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 5,
       "rationale": [
         {
           "key": "trend",
@@ -502,15 +502,15 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": false,
-          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
+          "met": true,
+          "text": "Price ABOVE the upper channel band (50 EMA of Highs). Bulls broken out of the channel."
         },
         {
           "key": "macd",
           "icon": "\ud83d\udcc9",
           "label": "MACD 15M (10-20-1)",
-          "met": false,
-          "text": "15M MACD is on the wrong side of zero. Entry timeframe momentum not yet aligned."
+          "met": true,
+          "text": "15M MACD is ABOVE zero \u2014 bullish momentum confirmed on the entry timeframe."
         },
         {
           "key": "mtf_1h",
@@ -537,7 +537,7 @@
     },
     {
       "symbol": "EURGBP",
-      "price": 0.85573,
+      "price": 0.8558,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
