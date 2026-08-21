@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-21 22:58:37 UTC",
+  "last_updated": "2026-08-21 23:31:39 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
@@ -65,18 +65,18 @@
     },
     {
       "symbol": "USDJPY",
-      "price": 158.972,
+      "price": 158.862,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
         "trend": true,
-        "channel": true,
+        "channel": false,
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": false,
         "ses": false
       },
-      "conditions_met": 4,
+      "conditions_met": 3,
       "rationale": [
         {
           "key": "trend",
@@ -89,8 +89,8 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": true,
-          "text": "Price ABOVE the upper channel band (50 EMA of Highs). Bulls broken out of the channel."
+          "met": false,
+          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
         },
         {
           "key": "macd",
