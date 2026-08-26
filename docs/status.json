@@ -1,12 +1,12 @@
 {
-  "last_updated": "2026-08-26 14:34:44 UTC",
+  "last_updated": "2026-08-26 16:04:14 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
   "pairs": [
     {
       "symbol": "EURUSD",
-      "price": 1.16482,
+      "price": 1.16537,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -65,7 +65,7 @@
     },
     {
       "symbol": "USDJPY",
-      "price": 159.42,
+      "price": 159.36501,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -124,7 +124,7 @@
     },
     {
       "symbol": "GBPUSD",
-      "price": 1.35888,
+      "price": 1.35943,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -132,10 +132,10 @@
         "channel": true,
         "macd": true,
         "mtf_1h": true,
-        "mtf_4h": false,
+        "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -169,8 +169,8 @@
           "key": "mtf_4h",
           "icon": "\ud83d\udcc5",
           "label": "4H Trend Filter",
-          "met": false,
-          "text": "4H MACD not aligned. The 4-hour trend does not yet support this direction. Wait for the bigger picture to confirm."
+          "met": true,
+          "text": "4H MACD BELOW zero \u2014 the 4-hour trend agrees. All three timeframes aligned bearish. High-conviction setup."
         },
         {
           "key": "ses",
@@ -183,7 +183,7 @@
     },
     {
       "symbol": "AUDUSD",
-      "price": 0.7171,
+      "price": 0.71705,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -242,7 +242,7 @@
     },
     {
       "symbol": "USDCAD",
-      "price": 1.38866,
+      "price": 1.38769,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -301,7 +301,7 @@
     },
     {
       "symbol": "USDCHF",
-      "price": 0.80594,
+      "price": 0.80543,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -419,7 +419,7 @@
     },
     {
       "symbol": "EURJPY",
-      "price": 185.60699,
+      "price": 185.66299,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -478,7 +478,7 @@
     },
     {
       "symbol": "GBPJPY",
-      "price": 216.588,
+      "price": 216.633,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -537,7 +537,7 @@
     },
     {
       "symbol": "EURGBP",
-      "price": 0.85692,
+      "price": 0.85701,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -545,10 +545,10 @@
         "channel": true,
         "macd": true,
         "mtf_1h": true,
-        "mtf_4h": false,
+        "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 4,
+      "conditions_met": 5,
       "rationale": [
         {
           "key": "trend",
@@ -582,8 +582,8 @@
           "key": "mtf_4h",
           "icon": "\ud83d\udcc5",
           "label": "4H Trend Filter",
-          "met": false,
-          "text": "4H MACD not aligned. The 4-hour trend does not yet support this direction. Wait for the bigger picture to confirm."
+          "met": true,
+          "text": "4H MACD ABOVE zero \u2014 the 4-hour trend agrees. All three timeframes aligned bullish. High-conviction setup."
         },
         {
           "key": "ses",
