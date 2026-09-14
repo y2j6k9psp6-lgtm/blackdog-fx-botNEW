@@ -1,23 +1,23 @@
 {
-  "last_updated": "2026-09-13 22:00:12 UTC",
+  "last_updated": "2026-09-14 00:05:33 UTC",
   "timeframe": "15m",
   "mtf_1h": "1h",
   "mtf_4h": "4h",
   "pairs": [
     {
       "symbol": "EURUSD",
-      "price": 1.16023,
+      "price": 1.15969,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
         "trend": false,
-        "channel": false,
+        "channel": true,
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -30,8 +30,8 @@
           "key": "channel",
           "icon": "\ud83d\udcc8",
           "label": "Price vs Channel (50 EMA)",
-          "met": false,
-          "text": "Price still INSIDE the channel. Waiting for a decisive channel breakout."
+          "met": true,
+          "text": "Price BELOW the lower channel band (50 EMA of Lows). Bears broken down through the channel."
         },
         {
           "key": "macd",
@@ -65,7 +65,7 @@
     },
     {
       "symbol": "USDJPY",
-      "price": 153.739,
+      "price": 153.411,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -124,7 +124,7 @@
     },
     {
       "symbol": "GBPUSD",
-      "price": 1.35289,
+      "price": 1.35259,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -133,9 +133,9 @@
         "macd": true,
         "mtf_1h": true,
         "mtf_4h": false,
-        "ses": false
+        "ses": true
       },
-      "conditions_met": 4,
+      "conditions_met": 5,
       "rationale": [
         {
           "key": "trend",
@@ -176,25 +176,25 @@
           "key": "ses",
           "icon": "\u26a1",
           "label": "SES Entry Arrow (15M Trigger)",
-          "met": false,
-          "text": "No SES arrow yet. Watching for price to cross the channel band on the 15M chart."
+          "met": true,
+          "text": "SES blue arrow fired on 15M \u2014 all 6 conditions met. Place pending BUY 2-3 pips above this bar's high."
         }
       ]
     },
     {
       "symbol": "AUDUSD",
-      "price": 0.71726,
+      "price": 0.71541,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
         "trend": false,
         "channel": true,
         "macd": true,
-        "mtf_1h": false,
+        "mtf_1h": true,
         "mtf_4h": true,
         "ses": false
       },
-      "conditions_met": 3,
+      "conditions_met": 4,
       "rationale": [
         {
           "key": "trend",
@@ -221,8 +221,8 @@
           "key": "mtf_1h",
           "icon": "\ud83d\udd50",
           "label": "1H MACD Confirmation",
-          "met": false,
-          "text": "1H MACD not yet aligned. The hourly chart does not confirm this trade direction."
+          "met": true,
+          "text": "1H MACD BELOW zero \u2014 the 1-hour chart confirms bearish momentum. First confirmation layer passed."
         },
         {
           "key": "mtf_4h",
@@ -242,7 +242,7 @@
     },
     {
       "symbol": "USDCAD",
-      "price": 1.3867,
+      "price": 1.38679,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -301,7 +301,7 @@
     },
     {
       "symbol": "USDCHF",
-      "price": 0.81611,
+      "price": 0.81661,
       "signal": "WAIT",
       "direction": "BULL",
       "conditions": {
@@ -360,7 +360,7 @@
     },
     {
       "symbol": "NZDUSD",
-      "price": 0.58163,
+      "price": 0.58123,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -419,7 +419,7 @@
     },
     {
       "symbol": "EURJPY",
-      "price": 178.142,
+      "price": 177.858,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -478,7 +478,7 @@
     },
     {
       "symbol": "GBPJPY",
-      "price": 207.771,
+      "price": 207.5,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
@@ -537,7 +537,7 @@
     },
     {
       "symbol": "EURGBP",
-      "price": 0.85736,
+      "price": 0.85713,
       "signal": "WAIT",
       "direction": "BEAR",
       "conditions": {
